@@ -72,13 +72,13 @@ heroku config:set SUPABASE_URL=https://zigemvynmihdhntrxzsg.supabase.co
 heroku config:set SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InppZ2VtdnlubWloZGhudHJ4enNnIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MDUxMjIzNywiZXhwIjoyMDc2MDg4MjM3fQ.1x_yKrodyrBdTowa7WnPGYumv767GzwtUkrhZU-aTGA
 
 # Required: Security Keys (CHANGE THESE IN PRODUCTION!)
-heroku config:set API_SECRET=CHANGE-ME-TO-RANDOM-STRING-32-CHARS
-heroku config:set SECRET_PEPPER=CHANGE-ME-TO-ANOTHER-RANDOM-STRING
+heroku config:set API_SECRET=k7idGxyxhN2moKZXF82WPMWJs6g70FUZ
+heroku config:set SECRET_PEPPER=OzaOZm40Uj9zaIyTrXh2j4DtZhVNi8le
 
 # Optional: N8N Webhook (if you want Zalo integration)
 heroku config:set N8N_WEBHOOK_URL=https://n8n.nhathuocvietnhat.vn/webhook/lucky-wheel-2025-10-14
 heroku config:set N8N_WEBHOOK_API_KEY=lucky-wheel-123456
-heroku config:set N8N_WEBHOOK_SECRET=change-me-in-production
+heroku config:set N8N_WEBHOOK_SECRET=wNCKKSnDyMeU74KsTLhKiUZwkP2TmVmO
 
 # Optional: Frontend URL (for CORS)
 heroku config:set FRONTEND_URL=https://your-app-name.herokuapp.com

@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS lucky_wheel_spins (
   -- User Information (Hashed for Security)
   phone_hash TEXT NOT NULL,           -- SHA256(phone + pepper) - for duplicate check
   phone_masked TEXT,                  -- 091***8417 - for admin view only
+  phone_plain TEXT,                   -- Raw phone for automation workflows (service role access only)
   customer_name TEXT,                 -- Customer name from form
 
   -- Prize Information
@@ -71,6 +72,7 @@ CREATE INDEX IF NOT EXISTS idx_spins_n8n_failed
 COMMENT ON TABLE lucky_wheel_spins IS 'Stores all lucky wheel spin results with phone hash for duplicate prevention';
 COMMENT ON COLUMN lucky_wheel_spins.phone_hash IS 'SHA256(phone + SECRET_PEPPER) - never store raw phone numbers';
 COMMENT ON COLUMN lucky_wheel_spins.phone_masked IS 'Masked phone for admin view (091***8417)';
+COMMENT ON COLUMN lucky_wheel_spins.phone_plain IS 'Raw phone number stored securely for automation workflows';
 COMMENT ON COLUMN lucky_wheel_spins.n8n_sent IS 'Whether Zalo message was successfully sent via N8N';
 COMMENT ON COLUMN lucky_wheel_spins.n8n_retry_count IS 'Number of retry attempts if N8N failed';
 

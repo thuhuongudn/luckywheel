@@ -29,12 +29,15 @@ const allowedOrigins = [
   process.env.PRODUCTION_URL,
 ].filter(Boolean);
 
+// Vite picks random ports (5173+). Allow any localhost:517* origin during local dev.
+const isLocalhostDevOrigin = (origin = '') => origin.startsWith('http://localhost:517');
+
 app.use(cors({
   origin: function (origin, callback) {
     // Allow requests with no origin (mobile apps, curl, Heroku health checks)
     if (!origin) return callback(null, true);
 
-    if (allowedOrigins.indexOf(origin) !== -1) {
+    if (allowedOrigins.indexOf(origin) !== -1 || isLocalhostDevOrigin(origin)) {
       callback(null, true);
     } else {
       console.warn('❌ CORS blocked request from:', origin);
@@ -56,11 +59,11 @@ const limiter = rateLimit({
 const spinLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
   max: 5, // Max 5 spins per IP+phone per hour
-  keyGenerator: (req) => {
+  keyGenerator: (req, res) => {
+    const ipKey = rateLimit.ipKeyGenerator(req, res);
     const phone = req.body.phone || '';
     const phoneHash = db.hashPhone(phone);
-    const ip = req.ip || 'unknown';
-    return `${ip}-${phoneHash.substring(0, 8)}`;
+    return `${ipKey}-${phoneHash.substring(0, 8)}`;
   },
   skip: (req) => !req.body.phone,
   message: 'Too many spin attempts, please try again later.',
