@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { LuckyWheel as LuckyWheelCanvas } from '@lucky-canvas/react';
 import type { LuckyWheelRef } from '@lucky-canvas/react';
 import type { Prize } from '../types';
@@ -42,50 +42,56 @@ const LuckyWheel: React.FC = () => {
   const [hasSpun, setHasSpun] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [toastType, setToastType] = useState<'error' | 'success' | 'info'>('error');
+  const [prizes, setPrizes] = useState<Prize[]>([]);
+  const [isLoadingPrizes, setIsLoadingPrizes] = useState(true);
 
-  // Cấu hình giải thưởng - Professional red & white alternating (như ảnh 2)
-  const prizes: Prize[] = [
-    {
-      background: '#FFFFFF',
-      fonts: [{ text: 'MÃ GIẢM GIÁ 50K', fontSize: '13px', fontColor: '#8B0000', fontWeight: 'bold', top: '28%' }],
-      value: 50000
-    },
-    {
-      background: '#C41E3A',
-      fonts: [{ text: 'MÃ GIẢM GIÁ 50K', fontSize: '13px', fontColor: '#FFFFFF', fontWeight: 'bold', top: '28%' }],
-      value: 50000
-    },
-    {
-      background: '#FFFFFF',
-      fonts: [{ text: 'MÃ GIẢM GIÁ 20K', fontSize: '13px', fontColor: '#8B0000', fontWeight: 'bold', top: '28%' }],
-      value: 20000
-    },
-    {
-      background: '#C41E3A',
-      fonts: [{ text: 'MÃ GIẢM GIÁ 100K', fontSize: '13px', fontColor: '#FFFFFF', fontWeight: 'bold', top: '28%' }],
-      value: 100000
-    },
-    {
-      background: '#FFFFFF',
-      fonts: [{ text: 'MÃ GIẢM GIÁ 30K', fontSize: '13px', fontColor: '#8B0000', fontWeight: 'bold', top: '28%' }],
-      value: 30000
-    },
-    {
-      background: '#C41E3A',
-      fonts: [{ text: 'MÃ GIẢM GIÁ 20K', fontSize: '13px', fontColor: '#FFFFFF', fontWeight: 'bold', top: '28%' }],
-      value: 20000
-    },
-    {
-      background: '#FFFFFF',
-      fonts: [{ text: 'FREESHIP', fontSize: '15px', fontColor: '#8B0000', fontWeight: 'bold', top: '32%' }],
-      value: 20000
-    },
-    {
-      background: '#C41E3A',
-      fonts: [{ text: 'MÃ GIẢM GIÁ 30K', fontSize: '13px', fontColor: '#FFFFFF', fontWeight: 'bold', top: '28%' }],
-      value: 30000
-    },
-  ];
+  // Fetch prizes from backend on mount
+  useEffect(() => {
+    const fetchPrizes = async () => {
+      try {
+        const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+        const response = await fetch(`${backendUrl}/api/prizes/${CAMPAIGN_ID}`);
+        const data = await response.json();
+
+        if (data.success && data.data && data.data.length > 0) {
+          // Map Supabase prize_configs to Prize format
+          const formattedPrizes: Prize[] = data.data.map((p: any, index: number) => ({
+            background: index % 2 === 0 ? '#FFFFFF' : '#C41E3A',
+            fonts: [{
+              text: p.prize_label,
+              fontSize: p.font_size || '13px',
+              fontColor: index % 2 === 0 ? '#8B0000' : '#FFFFFF',
+              fontWeight: 'bold',
+              top: '28%'
+            }],
+            value: p.prize_value
+          }));
+          setPrizes(formattedPrizes);
+        } else {
+          // Fallback to default prizes if API fails
+          setPrizes([
+            { background: '#FFFFFF', fonts: [{ text: 'MÃ GIẢM GIÁ 20K', fontSize: '13px', fontColor: '#8B0000', fontWeight: 'bold', top: '28%' }], value: 20000 },
+            { background: '#C41E3A', fonts: [{ text: 'MÃ GIẢM GIÁ 30K', fontSize: '13px', fontColor: '#FFFFFF', fontWeight: 'bold', top: '28%' }], value: 30000 },
+            { background: '#FFFFFF', fonts: [{ text: 'MÃ GIẢM GIÁ 50K', fontSize: '13px', fontColor: '#8B0000', fontWeight: 'bold', top: '28%' }], value: 50000 },
+            { background: '#C41E3A', fonts: [{ text: 'MÃ GIẢM GIÁ 100K', fontSize: '13px', fontColor: '#FFFFFF', fontWeight: 'bold', top: '28%' }], value: 100000 },
+          ]);
+        }
+      } catch (error) {
+        console.error('Failed to fetch prizes:', error);
+        // Fallback prizes
+        setPrizes([
+          { background: '#FFFFFF', fonts: [{ text: 'MÃ GIẢM GIÁ 20K', fontSize: '13px', fontColor: '#8B0000', fontWeight: 'bold', top: '28%' }], value: 20000 },
+          { background: '#C41E3A', fonts: [{ text: 'MÃ GIẢM GIÁ 30K', fontSize: '13px', fontColor: '#FFFFFF', fontWeight: 'bold', top: '28%' }], value: 30000 },
+          { background: '#FFFFFF', fonts: [{ text: 'MÃ GIẢM GIÁ 50K', fontSize: '13px', fontColor: '#8B0000', fontWeight: 'bold', top: '28%' }], value: 50000 },
+          { background: '#C41E3A', fonts: [{ text: 'MÃ GIẢM GIÁ 100K', fontSize: '13px', fontColor: '#FFFFFF', fontWeight: 'bold', top: '28%' }], value: 100000 },
+        ]);
+      } finally {
+        setIsLoadingPrizes(false);
+      }
+    };
+
+    fetchPrizes();
+  }, []);
 
   // Cấu hình nút quay - Gold button (như ảnh 2)
   const buttons = [
@@ -261,14 +267,20 @@ const LuckyWheel: React.FC = () => {
       </div>
 
       <div className="wheel-wrapper">
-        <LuckyWheelCanvas
-          ref={wheelRef}
-          width="480px"
-          height="480px"
-          prizes={prizes}
-          buttons={buttons}
-          onStart={handleStart}
-        />
+        {isLoadingPrizes ? (
+          <div className="wheel-loading">
+            <p>Đang tải vòng quay...</p>
+          </div>
+        ) : (
+          <LuckyWheelCanvas
+            ref={wheelRef}
+            width="480px"
+            height="480px"
+            prizes={prizes}
+            buttons={buttons}
+            onStart={handleStart}
+          />
+        )}
       </div>
 
       <div className="info-section">
