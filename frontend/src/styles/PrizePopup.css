@@ -1,0 +1,177 @@
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.popup-content {
+  background: white;
+  border-radius: 20px;
+  padding: 30px;
+  max-width: 450px;
+  width: 90%;
+  position: relative;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.popup-close {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: none;
+  border: none;
+  font-size: 30px;
+  cursor: pointer;
+  color: #999;
+  line-height: 1;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  transition: color 0.2s;
+}
+
+.popup-close:hover {
+  color: #333;
+}
+
+.popup-body {
+  text-align: center;
+  padding: 20px 0;
+}
+
+.popup-icon {
+  font-size: 60px;
+  margin-bottom: 15px;
+  animation: bounce 0.6s ease-in-out;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+.popup-title {
+  font-size: 28px;
+  font-weight: bold;
+  color: #333;
+  margin: 0 0 10px 0;
+}
+
+.popup-message {
+  font-size: 16px;
+  color: #666;
+  margin: 0 0 15px 0;
+}
+
+.popup-prize {
+  font-size: 48px;
+  font-weight: bold;
+  color: #ff6b35;
+  margin: 20px 0;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.popup-code {
+  background: #f8f9fa;
+  border-radius: 10px;
+  padding: 20px;
+  margin: 20px 0;
+}
+
+.code-label {
+  font-size: 14px;
+  color: #666;
+  margin: 0 0 10px 0;
+}
+
+.code-value {
+  font-size: 24px;
+  font-weight: bold;
+  color: #333;
+  font-family: 'Courier New', monospace;
+  background: white;
+  padding: 12px 20px;
+  border-radius: 8px;
+  border: 2px dashed #ddd;
+  margin-bottom: 10px;
+  letter-spacing: 2px;
+}
+
+.copy-button {
+  background: #4CAF50;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.copy-button:hover {
+  background: #45a049;
+}
+
+.popup-note {
+  font-size: 14px;
+  color: #666;
+  margin: 15px 0 0 0;
+  line-height: 1.5;
+}
+
+.popup-button {
+  width: 100%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 15px 30px;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 20px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.popup-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+.popup-button:active {
+  transform: translateY(0);
+}

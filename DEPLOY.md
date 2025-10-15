@@ -14,19 +14,18 @@ This guide will help you deploy the Lucky Wheel app (Frontend + Backend) to Hero
 ## 🗂️ Project Structure
 
 ```
-haravan-app/
-├── lucky-wheel-backend/     ← Deploy THIS folder to Heroku
-│   ├── server.js
-│   ├── Procfile
-│   ├── package.json
-│   ├── .env (local only, DO NOT commit!)
-│   └── lib/
-│       ├── supabase.js
-│       └── db.js
-│
-└── lucky-wheel-app/         ← Frontend (built to dist/)
-    ├── dist/                ← Built files served by backend
-    └── package.json
+lucky-wheel-backend/
+├── server.js
+├── Procfile
+├── package.json
+├── .env (local only, DO NOT commit!)
+├── lib/
+│   ├── supabase.js
+│   └── db.js
+└── frontend/               ← React app (built on deploy)
+    ├── package.json
+    ├── src/
+    └── dist/              ← Built files served by backend
 ```
 
 ## 🚀 Deployment Steps
@@ -199,7 +198,7 @@ node -e "const {createClient} = require('@supabase/supabase-js'); const s = crea
 
 ```bash
 # Check if dist/ folder exists
-heroku run ls -la ../lucky-wheel-app/dist
+heroku run ls -la frontend/dist
 
 # If not, rebuild frontend:
 heroku run npm run build:frontend

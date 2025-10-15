@@ -437,7 +437,7 @@ Backend sẽ:
 ## 📞 Support
 
 - Backend repo: `/lucky-wheel-backend`
-- Frontend repo: `/lucky-wheel-app`
+- Frontend repo: `/frontend`
 - N8N workflow: See `N8N_WORKFLOW.md`
 
 ---

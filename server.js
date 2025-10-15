@@ -381,7 +381,7 @@ app.get('/api/prizes/:campaignId', async (req, res) => {
 // =============================================================================
 
 // Serve static files from frontend build folder
-const frontendBuildPath = path.join(__dirname, '../lucky-wheel-app/dist');
+const frontendBuildPath = path.join(__dirname, 'frontend/dist');
 app.use(express.static(frontendBuildPath));
 
 // SPA fallback - serve index.html for all non-API routes
