@@ -33,7 +33,8 @@ const allowedOrigins = [
 // Vite picks random ports (5173+). Allow any localhost:517* origin during local dev.
 const isLocalhostDevOrigin = (origin = '') => origin.startsWith('http://localhost:517');
 
-app.use(cors({
+// Apply CORS only to API routes, not static assets
+app.use('/api', cors({
   origin: function (origin, callback) {
     // Allow requests with no origin (mobile apps, curl, Heroku health checks)
     if (!origin) return callback(null, true);
