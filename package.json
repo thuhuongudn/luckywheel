@@ -10,8 +10,8 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
-    "build:frontend": "cd ../lucky-wheel-app && npm run build",
-    "heroku-postbuild": "npm run build:frontend",
+    "build:frontend": "echo 'skip FE build for now'",
+    "heroku-postbuild": "echo 'no FE yet, skipping'",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": ["lucky-wheel", "vong-quay", "heroku", "supabase"],
