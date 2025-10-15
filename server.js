@@ -25,6 +25,7 @@ app.use(express.json());
 const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:3000',
+  'https://luckywheel-dc4995c0f577.herokuapp.com',
   process.env.FRONTEND_URL,
   process.env.PRODUCTION_URL,
 ].filter(Boolean);
