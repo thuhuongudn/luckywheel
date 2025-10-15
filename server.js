@@ -246,41 +246,48 @@ app.post('/api/spin', spinLimiter, async (req, res) => {
       });
     }
 
-    // 3. Check duplicate (FAST - 50-100ms)
-    const { exists, spin: existingSpin } = await db.checkPhoneExists(phone, campaign_id);
-
-    if (exists) {
-      console.log(`⚠️  [SPIN] Duplicate attempt: ${db.maskPhone(phone)}`);
-      return res.status(400).json({
-        success: false,
-        message: 'Số điện thoại đã quay rồi! Vui lòng kiểm tra Zalo.',
-        already_spun: true,
-        spun_at: existingSpin.created_at,
-        prize: existingSpin.prize,
-        coupon_code: existingSpin.coupon_code
-      });
-    }
-
-    // 4. Select random prize from database (weight-based)
+    // 3. Select random prize from database (weight-based)
     const { prize_value, prize_label } = await db.selectRandomPrize(campaign_id);
 
     console.log(`🎰 [SPIN] Selected prize: ${prize_label} (${prize_value}đ) for ${db.maskPhone(phone)}`);
 
-    // 5. Generate coupon code
+    // 4. Generate coupon code
     const couponCode = generateCouponCode();
 
-    // 6. Save to database IMMEDIATELY (mark as used)
-    const spinRecord = await db.saveSpin({
-      campaignId: campaign_id,
-      phone: phone,
-      customerName: name || 'Anonymous',
-      prize: prize_value,
-      couponCode: couponCode,
-      ipAddress: req.ip,
-      userAgent: req.get('user-agent')
-    });
+    // 5. Save to database IMMEDIATELY (DB constraint will prevent duplicates)
+    let spinRecord;
+    try {
+      spinRecord = await db.saveSpin({
+        campaignId: campaign_id,
+        phone: phone,
+        customerName: name || 'Anonymous',
+        prize: prize_value,
+        couponCode: couponCode,
+        ipAddress: req.ip,
+        userAgent: req.get('user-agent')
+      });
 
-    console.log(`✅ [SPIN] Saved to DB: ${spinRecord.id}`);
+      console.log(`✅ [SPIN] Saved to DB: ${spinRecord.id}`);
+    } catch (saveError) {
+      // Handle duplicate phone (DB unique constraint violation)
+      if (saveError.message === 'DUPLICATE_PHONE') {
+        console.log(`⚠️  [SPIN] Duplicate detected by DB constraint: ${db.maskPhone(phone)}`);
+
+        // Fetch existing spin record to show user their previous prize
+        const { spin: existingSpin } = await db.checkPhoneExists(phone, campaign_id);
+
+        return res.status(400).json({
+          success: false,
+          message: 'Số điện thoại đã quay rồi! Vui lòng kiểm tra Zalo để nhận mã giảm giá.',
+          already_spun: true,
+          spun_at: existingSpin?.created_at,
+          prize: existingSpin?.prize,
+          coupon_code: existingSpin?.coupon_code
+        });
+      }
+      // Re-throw other errors
+      throw saveError;
+    }
 
     // 7. Return success to frontend IMMEDIATELY (150-200ms total)
     res.json({

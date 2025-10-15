@@ -4,6 +4,7 @@ import type { LuckyWheelRef } from '@lucky-canvas/react';
 import type { Prize } from '../types';
 import { checkEligibility, sendSpinResult } from '../services/api';
 import PrizePopup from './PrizePopup';
+import Toast from './Toast';
 import '../styles/LuckyWheel.css';
 
 const COUPON_LENGTH = 6;
@@ -39,26 +40,62 @@ const LuckyWheel: React.FC = () => {
   const [nameError, setNameError] = useState('');
   const [phoneError, setPhoneError] = useState('');
   const [hasSpun, setHasSpun] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [toastType, setToastType] = useState<'error' | 'success' | 'info'>('error');
 
-  // Cấu hình giải thưởng
+  // Cấu hình giải thưởng - Professional red & white alternating (như ảnh 2)
   const prizes: Prize[] = [
-    { background: '#ffb8b8', fonts: [{ text: '20.000đ', fontSize: '18px' }], value: 20000 },
-    { background: '#ffd88d', fonts: [{ text: '30.000đ', fontSize: '18px' }], value: 30000 },
-    { background: '#b8e6b8', fonts: [{ text: '50.000đ', fontSize: '18px' }], value: 50000 },
-    { background: '#ffc6ff', fonts: [{ text: '100.000đ', fontSize: '18px' }], value: 100000 },
-    { background: '#a8d8ff', fonts: [{ text: '20.000đ', fontSize: '18px' }], value: 20000 },
-    { background: '#ffb8b8', fonts: [{ text: '30.000đ', fontSize: '18px' }], value: 30000 },
+    {
+      background: '#FFFFFF',
+      fonts: [{ text: 'MÃ GIẢM GIÁ 50K', fontSize: '13px', fontColor: '#8B0000', fontWeight: 'bold', top: '28%' }],
+      value: 50000
+    },
+    {
+      background: '#C41E3A',
+      fonts: [{ text: 'MÃ GIẢM GIÁ 50K', fontSize: '13px', fontColor: '#FFFFFF', fontWeight: 'bold', top: '28%' }],
+      value: 50000
+    },
+    {
+      background: '#FFFFFF',
+      fonts: [{ text: 'MÃ GIẢM GIÁ 20K', fontSize: '13px', fontColor: '#8B0000', fontWeight: 'bold', top: '28%' }],
+      value: 20000
+    },
+    {
+      background: '#C41E3A',
+      fonts: [{ text: 'MÃ GIẢM GIÁ 100K', fontSize: '13px', fontColor: '#FFFFFF', fontWeight: 'bold', top: '28%' }],
+      value: 100000
+    },
+    {
+      background: '#FFFFFF',
+      fonts: [{ text: 'MÃ GIẢM GIÁ 30K', fontSize: '13px', fontColor: '#8B0000', fontWeight: 'bold', top: '28%' }],
+      value: 30000
+    },
+    {
+      background: '#C41E3A',
+      fonts: [{ text: 'MÃ GIẢM GIÁ 20K', fontSize: '13px', fontColor: '#FFFFFF', fontWeight: 'bold', top: '28%' }],
+      value: 20000
+    },
+    {
+      background: '#FFFFFF',
+      fonts: [{ text: 'FREESHIP', fontSize: '15px', fontColor: '#8B0000', fontWeight: 'bold', top: '32%' }],
+      value: 20000
+    },
+    {
+      background: '#C41E3A',
+      fonts: [{ text: 'MÃ GIẢM GIÁ 30K', fontSize: '13px', fontColor: '#FFFFFF', fontWeight: 'bold', top: '28%' }],
+      value: 30000
+    },
   ];
 
-  // Cấu hình nút quay
+  // Cấu hình nút quay - Gold button (như ảnh 2)
   const buttons = [
-    { radius: '45%', background: '#617df2' },
-    { radius: '40%', background: '#afc8ff' },
+    { radius: '50%', background: '#FFD700', pointer: false },
+    { radius: '45%', background: '#FFA500', pointer: false },
     {
-      radius: '35%',
-      background: '#869cfa',
+      radius: '38%',
+      background: '#FFD700',
       pointer: true,
-      fonts: [{ text: 'QUAY', fontSize: '18px', fontColor: '#fff', fontWeight: 'bold' }],
+      fonts: [{ text: 'QUAY', fontSize: '20px', fontColor: '#8B0000', fontWeight: 'bold' }],
     },
   ];
 
@@ -88,7 +125,8 @@ const LuckyWheel: React.FC = () => {
 
     if (!trimmedName || !validatePhone(sanitizedPhone) || hasSpun) {
       if (hasSpun) {
-        setPhoneError('Bạn đã quay rồi! Vui lòng kiểm tra Zalo để nhận mã.');
+        setToastType('error');
+        setToastMessage('Bạn đã quay rồi! Vui lòng kiểm tra Zalo để nhận mã giảm giá.');
       }
       debugLog('Spin request blocked', { hasSpun, nameValid: !!trimmedName, phoneValid: validatePhone(sanitizedPhone), phone: maskPhone(sanitizedPhone) });
       return;
@@ -98,13 +136,15 @@ const LuckyWheel: React.FC = () => {
       const eligibility = await checkEligibility(sanitizedPhone, CAMPAIGN_ID);
       if (!eligibility.eligible) {
         setHasSpun(true);
-        setPhoneError(eligibility.message || 'Số điện thoại đã quay rồi.');
+        setToastType('error');
+        setToastMessage(eligibility.message || 'Số điện thoại đã quay rồi! Vui lòng kiểm tra Zalo.');
         debugLog('Eligibility rejected', eligibility);
         return;
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Không thể kiểm tra điều kiện. Vui lòng thử lại sau.';
-      setPhoneError(message);
+      setToastType('error');
+      setToastMessage(message);
       debugLog('Eligibility check failed', message);
       return;
     }
@@ -169,7 +209,10 @@ const LuckyWheel: React.FC = () => {
 
       const duplicateAttempt = message.toLowerCase().includes('đã quay');
       setHasSpun(duplicateAttempt);
-      setPhoneError(message);
+
+      // Show toast instead of inline error
+      setToastType('error');
+      setToastMessage(message);
     }
   };
 
@@ -220,8 +263,8 @@ const LuckyWheel: React.FC = () => {
       <div className="wheel-wrapper">
         <LuckyWheelCanvas
           ref={wheelRef}
-          width="350px"
-          height="350px"
+          width="480px"
+          height="480px"
           prizes={prizes}
           buttons={buttons}
           onStart={handleStart}
@@ -255,6 +298,14 @@ const LuckyWheel: React.FC = () => {
           phone={phone}
           name={customerName.trim()}
           onClose={() => setShowPopup(false)}
+        />
+      )}
+
+      {toastMessage && (
+        <Toast
+          message={toastMessage}
+          type={toastType}
+          onClose={() => setToastMessage(null)}
         />
       )}
     </div>
