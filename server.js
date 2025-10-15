@@ -228,9 +228,19 @@ app.post('/api/check-eligibility', limiter, async (req, res) => {
 app.post('/api/spin', spinLimiter, async (req, res) => {
   const { phone, name, campaign_id, timestamp, signature } = req.body;
 
+  console.log('\n🎯 [API] /api/spin request received');
+  console.log('📥 [API] Request body:', {
+    phone: phone ? db.maskPhone(phone) : 'MISSING',
+    name,
+    campaign_id,
+    timestamp: timestamp ? new Date(timestamp).toISOString() : 'MISSING',
+    hasSignature: !!signature
+  });
+
   try {
     // 1. Validate required fields
     if (!phone || !campaign_id || !timestamp || !signature) {
+      console.log('❌ [API] Missing required fields');
       return res.status(400).json({
         success: false,
         message: 'Missing required fields'
@@ -247,14 +257,17 @@ app.post('/api/spin', spinLimiter, async (req, res) => {
     }
 
     // 3. Select random prize from database (weight-based)
+    console.log('🎲 [API] Selecting random prize...');
     const { prize_value, prize_label } = await db.selectRandomPrize(campaign_id);
 
     console.log(`🎰 [SPIN] Selected prize: ${prize_label} (${prize_value}đ) for ${db.maskPhone(phone)}`);
 
     // 4. Generate coupon code
     const couponCode = generateCouponCode();
+    console.log(`🎟️  [API] Generated coupon: ${couponCode}`);
 
     // 5. Save to database IMMEDIATELY (DB constraint will prevent duplicates)
+    console.log('💾 [API] Calling db.saveSpin...');
     let spinRecord;
     try {
       spinRecord = await db.saveSpin({
@@ -267,8 +280,16 @@ app.post('/api/spin', spinLimiter, async (req, res) => {
         userAgent: req.get('user-agent')
       });
 
-      console.log(`✅ [SPIN] Saved to DB: ${spinRecord.id}`);
+      console.log(`✅ [SPIN] Saved to DB successfully: ${spinRecord?.id}`);
+      console.log('📋 [SPIN] Saved record:', {
+        id: spinRecord?.id,
+        campaign_id: spinRecord?.campaign_id,
+        prize: spinRecord?.prize,
+        coupon_code: spinRecord?.coupon_code,
+        phone_masked: spinRecord?.phone_masked
+      });
     } catch (saveError) {
+      console.error('❌ [API] saveSpin threw error:', saveError.message);
       // Handle duplicate phone (DB unique constraint violation)
       if (saveError.message === 'DUPLICATE_PHONE') {
         console.log(`⚠️  [SPIN] Duplicate detected by DB constraint: ${db.maskPhone(phone)}`);
@@ -290,15 +311,19 @@ app.post('/api/spin', spinLimiter, async (req, res) => {
     }
 
     // 7. Return success to frontend IMMEDIATELY (150-200ms total)
-    res.json({
+    console.log('📤 [API] Sending success response to frontend');
+    const responseData = {
       success: true,
       message: 'Mã giảm giá sẽ được gửi qua Zalo trong vài giây',
       code: couponCode,
       prize: prize_value,
       phone_masked: db.maskPhone(phone)
-    });
+    };
+    console.log('✅ [API] Response:', responseData);
+    res.json(responseData);
 
     // 8. Send to N8N asynchronously (fire-and-forget, don't block response)
+    console.log('🚀 [API] Sending to N8N asynchronously...');
     sendToN8N({
       campaignId: campaign_id,
       phone: phone,
