@@ -1,45 +1,89 @@
+/* ============================================================================
+   CHRISTMAS THEME - Lucky Wheel 🎄🎅
+   Colors: Red (#DC143C, #C41E3A), White (#FFFFFF), Gold (#FFD700, #FFA500)
+   Inspired by: Festive, joyful, bright Christmas atmosphere
+   ============================================================================ */
+
 .lucky-wheel-container {
   max-width: 600px;
   margin: 0 auto;
   padding: 20px;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+  background: linear-gradient(135deg, #FFF5F5 0%, #FFE5E5 100%);
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Christmas decorations - Snowflakes */
+.lucky-wheel-container::before {
+  content: '❄️ ❄️ ❄️ ❄️ ❄️';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  font-size: 30px;
+  text-align: center;
+  opacity: 0.3;
+  animation: snowfall 10s infinite;
+  pointer-events: none;
+}
+
+@keyframes snowfall {
+  0% { transform: translateY(-50px); opacity: 0; }
+  50% { opacity: 0.3; }
+  100% { transform: translateY(100vh); opacity: 0; }
 }
 
 .wheel-header {
   text-align: center;
   margin-bottom: 30px;
+  position: relative;
+  padding: 20px;
+  background: linear-gradient(135deg, #DC143C 0%, #C41E3A 100%);
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(220, 20, 60, 0.3);
 }
 
 .wheel-header h1 {
-  font-size: 32px;
+  font-size: 36px;
   font-weight: bold;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #FFFFFF;
   margin: 0 0 10px 0;
-  animation: pulse 2s ease-in-out infinite;
+  text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.3);
+  animation: christmasPulse 2s ease-in-out infinite;
+  letter-spacing: 2px;
 }
 
-@keyframes pulse {
+@keyframes christmasPulse {
   0%, 100% {
     transform: scale(1);
+    text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.3);
   }
   50% {
-    transform: scale(1.05);
+    transform: scale(1.08);
+    text-shadow: 5px 5px 15px rgba(255, 215, 0, 0.6),
+                 0 0 20px rgba(255, 255, 255, 0.5);
   }
 }
 
 .subtitle {
-  font-size: 16px;
-  color: #666;
+  font-size: 18px;
+  color: #FFD700;
   margin: 0;
+  font-weight: 600;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 .form-section {
   margin-bottom: 30px;
   display: grid;
-  gap: 15px;
+  gap: 18px;
+  background: white;
+  padding: 25px;
+  border-radius: 20px;
+  box-shadow: 0 8px 25px rgba(220, 20, 60, 0.15);
+  border: 3px solid #FFD700;
 }
 
 .input-group {
@@ -51,34 +95,51 @@
 .text-input {
   width: 100%;
   max-width: 400px;
-  padding: 15px 20px;
-  font-size: 16px;
-  border: 2px solid #ddd;
-  border-radius: 10px;
+  padding: 16px 22px;
+  font-size: 17px;
+  border: 3px solid #FFD700;
+  border-radius: 12px;
   outline: none;
-  transition: border-color 0.3s, box-shadow 0.3s;
+  transition: all 0.3s ease;
   box-sizing: border-box;
+  background: linear-gradient(135deg, #FFFFFF 0%, #FFF9E5 100%);
+  font-weight: 500;
 }
 
 .text-input:focus {
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  border-color: #DC143C;
+  box-shadow: 0 0 0 4px rgba(220, 20, 60, 0.15),
+              0 0 15px rgba(255, 215, 0, 0.4);
+  transform: translateY(-2px);
 }
 
 .text-input.error {
-  border-color: #ff4444;
+  border-color: #C41E3A;
+  background: #FFF5F5;
+  animation: shake 0.5s;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-10px); }
+  75% { transform: translateX(10px); }
 }
 
 .text-input:disabled {
-  background-color: #f5f5f5;
+  background-color: #F0F0F0;
   cursor: not-allowed;
+  opacity: 0.6;
 }
 
 .error-message {
-  color: #ff4444;
+  color: #C41E3A;
   font-size: 14px;
-  margin: 8px 0 0 0;
+  margin: 10px 0 0 0;
   text-align: center;
+  font-weight: 600;
+  background: #FFE5E5;
+  padding: 8px 15px;
+  border-radius: 8px;
 }
 
 .wheel-wrapper {
@@ -86,24 +147,70 @@
   justify-content: center;
   align-items: center;
   margin: 40px 0;
-  padding: 20px;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-  border-radius: 20px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  padding: 30px;
+  background: linear-gradient(135deg, #DC143C 0%, #C41E3A 100%);
+  border-radius: 25px;
+  box-shadow: 0 15px 40px rgba(220, 20, 60, 0.4),
+              inset 0 2px 10px rgba(255, 255, 255, 0.2);
+  border: 5px solid #FFD700;
+  position: relative;
+}
+
+/* Christmas decorations around wheel */
+.wheel-wrapper::before {
+  content: '🎄';
+  position: absolute;
+  top: -15px;
+  left: 20px;
+  font-size: 50px;
+  animation: sway 3s ease-in-out infinite;
+}
+
+.wheel-wrapper::after {
+  content: '🎅';
+  position: absolute;
+  top: -15px;
+  right: 20px;
+  font-size: 50px;
+  animation: sway 3s ease-in-out infinite reverse;
+}
+
+@keyframes sway {
+  0%, 100% { transform: rotate(-5deg); }
+  50% { transform: rotate(5deg); }
 }
 
 .info-section {
   background: white;
-  border-radius: 15px;
-  padding: 25px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+  border-radius: 20px;
+  padding: 28px;
+  box-shadow: 0 10px 30px rgba(220, 20, 60, 0.15);
   margin-top: 30px;
+  border: 3px solid #FFD700;
+  position: relative;
+}
+
+.info-section::before {
+  content: '🎁';
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 40px;
+  background: white;
+  padding: 5px 15px;
+  border-radius: 50%;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
 .info-section h3 {
-  font-size: 20px;
-  margin: 0 0 15px 0;
-  color: #333;
+  font-size: 22px;
+  margin: 0 0 18px 0;
+  color: #DC143C;
+  font-weight: 700;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .prize-list {
@@ -113,20 +220,35 @@
 }
 
 .prize-list li {
-  padding: 10px 0;
-  font-size: 16px;
-  color: #555;
-  border-bottom: 1px solid #f0f0f0;
+  padding: 14px 18px;
+  font-size: 17px;
+  color: #333;
+  background: linear-gradient(135deg, #FFF9E5 0%, #FFE5E5 100%);
+  margin-bottom: 10px;
+  border-radius: 12px;
+  font-weight: 600;
+  border-left: 5px solid #DC143C;
+  box-shadow: 0 3px 10px rgba(220, 20, 60, 0.1);
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.prize-list li:hover {
+  transform: translateX(5px);
+  box-shadow: 0 5px 15px rgba(220, 20, 60, 0.2);
 }
 
 .prize-list li:last-child {
-  border-bottom: none;
+  margin-bottom: 0;
 }
 
 .rules {
   margin-top: 25px;
   padding-top: 25px;
-  border-top: 2px solid #f0f0f0;
+  border-top: 3px solid #FFD700;
+}
+
+.rules h3 {
+  color: #C41E3A;
 }
 
 .rules ul {
@@ -136,20 +258,20 @@
 }
 
 .rules li {
-  padding: 8px 0;
-  font-size: 14px;
-  color: #666;
-  line-height: 1.6;
-  padding-left: 20px;
+  padding: 10px 0;
+  font-size: 15px;
+  color: #555;
+  line-height: 1.7;
+  padding-left: 30px;
   position: relative;
+  font-weight: 500;
 }
 
 .rules li::before {
-  content: '•';
+  content: '⭐';
   position: absolute;
   left: 5px;
-  color: #667eea;
-  font-weight: bold;
+  font-size: 16px;
 }
 
 /* Responsive */
@@ -159,22 +281,60 @@
   }
 
   .wheel-header h1 {
-    font-size: 24px;
+    font-size: 28px;
+    letter-spacing: 1px;
   }
 
   .subtitle {
-    font-size: 14px;
+    font-size: 16px;
   }
 
   .wheel-wrapper {
-    padding: 10px;
+    padding: 20px;
+  }
+
+  .wheel-wrapper::before,
+  .wheel-wrapper::after {
+    font-size: 35px;
+    top: -10px;
   }
 
   .info-section {
-    padding: 20px;
+    padding: 22px;
   }
 
   .text-input {
     max-width: 100%;
+    font-size: 16px;
   }
+
+  .prize-list li {
+    font-size: 16px;
+    padding: 12px 15px;
+  }
+}
+
+/* Christmas lights animation */
+@keyframes lights {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+/* Add sparkle effect */
+.wheel-header::after {
+  content: '✨';
+  position: absolute;
+  top: 10px;
+  right: 20px;
+  font-size: 25px;
+  animation: lights 2s infinite;
+}
+
+.wheel-header::before {
+  content: '✨';
+  position: absolute;
+  top: 10px;
+  left: 20px;
+  font-size: 25px;
+  animation: lights 2s infinite 1s;
 }
