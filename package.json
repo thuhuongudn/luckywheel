@@ -1,0 +1,30 @@
+{
+  "name": "lucky-wheel-backend",
+  "version": "1.0.0",
+  "description": "Lucky Wheel backend server with Supabase integration",
+  "main": "server.js",
+  "engines": {
+    "node": "20.x",
+    "npm": "10.x"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "build:frontend": "cd ../lucky-wheel-app && npm run build",
+    "heroku-postbuild": "npm run build:frontend",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": ["lucky-wheel", "vong-quay", "heroku", "supabase"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.75.0",
+    "axios": "^1.12.2",
+    "cors": "^2.8.5",
+    "crypto-js": "^4.2.0",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.1.0",
+    "helmet": "^8.1.0"
+  }
+}
