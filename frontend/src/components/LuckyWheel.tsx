@@ -60,10 +60,16 @@ const convertPrizesToSegments = (prizesWithWeights: any[]): Prize[] => {
   return segments.slice(0, 10);
 };
 
+const RESULT_POPUP_DELAY = 500;
+
 const LuckyWheel: React.FC = () => {
   const wheelRef = useRef<LuckyWheelRef | null>(null);
+  const wrapperRef = useRef<HTMLDivElement | null>(null);
   const spinAudioRef = useRef<HTMLAudioElement | null>(null);
   const winningAudioRef = useRef<HTMLAudioElement | null>(null);
+  const pendingResultRef = useRef<{ prizeValue: number; prizeCode: string } | null>(null);
+  const hasPrimedWinningAudioRef = useRef(false);
+  const revealTimeoutRef = useRef<number | null>(null);
   const [customerName, setCustomerName] = useState('');
   const [phone, setPhone] = useState('');
   const [isSpinning, setIsSpinning] = useState(false);
@@ -81,21 +87,50 @@ const LuckyWheel: React.FC = () => {
 
   useEffect(() => {
     if (typeof window === 'undefined') {
-      return;
+      return () => undefined;
     }
 
-    const updateWheelSize = () => {
+    const minSize = 220;
+    const baseMaxSize = 340;
+
+    const computeWheelSize = () => {
       const viewportWidth = window.innerWidth;
-      const maxSize = 340;
-      const minSize = 240;
-      const horizontalPadding = viewportWidth <= 480 ? 56 : 120;
-      const calculatedSize = Math.min(maxSize, Math.max(minSize, viewportWidth - horizontalPadding));
-      setWheelSize(calculatedSize);
+      const viewportCap = Math.min(baseMaxSize, Math.round(viewportWidth * 0.7));
+      const element = wrapperRef.current;
+
+      if (element) {
+        const styles = window.getComputedStyle(element);
+        const paddingLeft = parseFloat(styles.paddingLeft) || 0;
+        const paddingRight = parseFloat(styles.paddingRight) || 0;
+        const availableWidth = Math.max(0, element.clientWidth - paddingLeft - paddingRight);
+        const candidateSize = Math.min(viewportCap, Math.floor(availableWidth));
+        const sizeWithMin = Math.max(minSize, candidateSize);
+        const nextSize = Math.min(sizeWithMin, viewportCap, Math.floor(availableWidth));
+        setWheelSize((prev) => (Math.abs(prev - nextSize) > 0.5 ? nextSize : prev));
+        return;
+      }
+
+      const fallbackSize = viewportCap;
+      setWheelSize((prev) => (Math.abs(prev - fallbackSize) > 0.5 ? fallbackSize : prev));
     };
 
-    updateWheelSize();
-    window.addEventListener('resize', updateWheelSize);
-    return () => window.removeEventListener('resize', updateWheelSize);
+    computeWheelSize();
+
+    const resizeHandler = () => computeWheelSize();
+    window.addEventListener('resize', resizeHandler);
+
+    let observer: ResizeObserver | null = null;
+    if (wrapperRef.current && 'ResizeObserver' in window) {
+      observer = new ResizeObserver(() => computeWheelSize());
+      observer.observe(wrapperRef.current);
+    }
+
+    return () => {
+      window.removeEventListener('resize', resizeHandler);
+      if (observer) {
+        observer.disconnect();
+      }
+    };
   }, []);
 
   // Initialize audio
@@ -103,10 +138,12 @@ const LuckyWheel: React.FC = () => {
     spinAudioRef.current = new Audio(spinSound);
     spinAudioRef.current.loop = true;
     spinAudioRef.current.volume = 0.5;
+    spinAudioRef.current.preload = 'auto';
 
     winningAudioRef.current = new Audio(winningSound);
     winningAudioRef.current.loop = false;
     winningAudioRef.current.volume = 0.7;
+    winningAudioRef.current.preload = 'auto';
 
     return () => {
       if (spinAudioRef.current) {
@@ -117,8 +154,47 @@ const LuckyWheel: React.FC = () => {
         winningAudioRef.current.pause();
         winningAudioRef.current = null;
       }
+      if (revealTimeoutRef.current) {
+        clearTimeout(revealTimeoutRef.current);
+        revealTimeoutRef.current = null;
+      }
     };
   }, []);
+
+  const handleWheelEnd = (_prize: unknown, _index: number) => {
+    if (spinAudioRef.current) {
+      spinAudioRef.current.pause();
+      spinAudioRef.current.currentTime = 0;
+    }
+
+    if (revealTimeoutRef.current) {
+      clearTimeout(revealTimeoutRef.current);
+      revealTimeoutRef.current = null;
+    }
+
+    const pendingResult = pendingResultRef.current;
+
+    if (!pendingResult) {
+      setIsSpinning(false);
+      return;
+    }
+
+    pendingResultRef.current = null;
+
+    revealTimeoutRef.current = window.setTimeout(() => {
+      if (winningAudioRef.current) {
+        winningAudioRef.current.pause();
+        winningAudioRef.current.currentTime = 0;
+        winningAudioRef.current.play().catch(err => console.log('Winning audio play failed:', err));
+      }
+
+      setIsSpinning(false);
+      setCurrentPrize(pendingResult.prizeValue);
+      setPrizeCode(pendingResult.prizeCode);
+      setShowPopup(true);
+      revealTimeoutRef.current = null;
+    }, RESULT_POPUP_DELAY);
+  };
 
   // Fetch prizes from backend on mount
   useEffect(() => {
@@ -266,6 +342,7 @@ const LuckyWheel: React.FC = () => {
     setCurrentPrize(0);
     setIsSpinning(true);
     setHasSpun(true);
+    pendingResultRef.current = null;
 
     // Play music
     if (winningAudioRef.current) {
@@ -276,6 +353,22 @@ const LuckyWheel: React.FC = () => {
     if (spinAudioRef.current) {
       spinAudioRef.current.currentTime = 0;
       spinAudioRef.current.play().catch(err => console.log('Audio play failed:', err));
+    }
+
+    if (winningAudioRef.current && !hasPrimedWinningAudioRef.current) {
+      const audio = winningAudioRef.current;
+      const originalVolume = audio.volume;
+      audio.volume = 0;
+      audio.play()
+        .then(() => {
+          hasPrimedWinningAudioRef.current = true;
+          audio.pause();
+          audio.currentTime = 0;
+          audio.volume = originalVolume;
+        })
+        .catch(() => {
+          audio.volume = originalVolume;
+        });
     }
 
     // Bắt đầu quay
@@ -310,25 +403,13 @@ const LuckyWheel: React.FC = () => {
       const elapsed = Date.now() - spinStart;
       const remaining = Math.max(0, minSpinDuration - elapsed);
 
+      pendingResultRef.current = {
+        prizeValue: serverPrizeValue,
+        prizeCode: response.code || generatedCode,
+      };
+
       setTimeout(() => {
         wheelRef.current?.stop(finalIndex);
-
-        // Stop music when wheel stops
-        if (spinAudioRef.current) {
-          spinAudioRef.current.pause();
-          spinAudioRef.current.currentTime = 0;
-        }
-
-        setTimeout(() => {
-          if (winningAudioRef.current) {
-            winningAudioRef.current.currentTime = 0;
-            winningAudioRef.current.play().catch(err => console.log('Winning audio play failed:', err));
-          }
-          setIsSpinning(false);
-          setCurrentPrize(serverPrizeValue);
-          setPrizeCode(response.code || generatedCode);
-          setShowPopup(true);
-        }, 2000);
       }, remaining);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Có lỗi xảy ra. Vui lòng thử lại sau.';
@@ -336,12 +417,15 @@ const LuckyWheel: React.FC = () => {
       debugLog('Spin webhook failed', message);
 
       wheelRef.current?.stop(randomIndex);
+      pendingResultRef.current = null;
+
+      if (revealTimeoutRef.current) {
+        clearTimeout(revealTimeoutRef.current);
+        revealTimeoutRef.current = null;
+      }
 
       // Stop music on error
-      if (spinAudioRef.current) {
-        spinAudioRef.current.pause();
-        spinAudioRef.current.currentTime = 0;
-      }
+      // Let the audio fade naturally when wheel stops via handleWheelEnd
 
       setIsSpinning(false);
       setShowPopup(false);
@@ -399,7 +483,7 @@ const LuckyWheel: React.FC = () => {
         </div>
       </div>
 
-      <div className="wheel-wrapper">
+      <div className="wheel-wrapper" ref={wrapperRef}>
         {isLoadingPrizes ? (
           <div
             className="wheel-loading"
@@ -410,6 +494,7 @@ const LuckyWheel: React.FC = () => {
         ) : (
           <LuckyWheelCanvas
             ref={wheelRef}
+            onEnd={handleWheelEnd}
             width={`${wheelSize}px`}
             height={`${wheelSize}px`}
             prizes={prizes}
