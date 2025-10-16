@@ -8,7 +8,6 @@ const BACKEND_API_URL = import.meta.env.VITE_BACKEND_URL || '';
 const SPIN_ENDPOINT = `${BACKEND_API_URL}/api/spin`;
 const CHECK_ENDPOINT = `${BACKEND_API_URL}/api/check-eligibility`;
 const API_SECRET = import.meta.env.VITE_API_SECRET || 'dev-secret-key-123456';
-const USE_MOCK_API = import.meta.env.VITE_USE_MOCK_API === 'true';
 const WEBHOOK_HEADER = 'lucky-wheel';
 const ENABLE_DEBUG_LOG = import.meta.env.DEV || import.meta.env.VITE_DEBUG_LOGS === 'true';
 
@@ -23,8 +22,6 @@ const getWebhookToken = (): string => {
   cachedApiKeyInitialized = true;
   return cachedApiKey;
 };
-
-const mockDelay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const maskPhone = (value: string) => {
   if (!value) {
@@ -60,19 +57,7 @@ export const checkEligibility = async (phone: string, campaignId: string): Promi
   message: string;
   already_spun?: boolean;
 }> => {
-  const apiKey = getWebhookToken();
-  const useRealApi = !USE_MOCK_API && apiKey;
-
-  if (!useRealApi) {
-    await mockDelay(300);
-    logDebug('Mock eligibility response');
-    return {
-      eligible: true,
-      message: 'Mock: đủ điều kiện quay',
-      already_spun: false,
-    };
-  }
-
+  // ALWAYS use real API in production - removed mock check
   try {
     logDebug('Calling eligibility endpoint', { endpoint: CHECK_ENDPOINT, phone: maskPhone(phone), campaignId });
     const response = await axios.post(CHECK_ENDPOINT, {
@@ -105,19 +90,8 @@ export const checkEligibility = async (phone: string, campaignId: string): Promi
 // Send spin result - gửi qua backend proxy (bảo mật)
 export const sendSpinResult = async (payload: WebhookPayload): Promise<WebhookResponse> => {
   const apiKey = getWebhookToken();
-  const useRealApi = !USE_MOCK_API && apiKey;
 
-  if (!useRealApi) {
-    await mockDelay(600);
-    logDebug('Mock spin response', { prize: payload.prize, code: maskCode(payload.code) });
-    return {
-      success: true,
-      message: 'Mock: kết quả quay đã được ghi nhận',
-      code: payload.code || 'MOCK-CODE-123',
-      prize: payload.prize,
-    };
-  }
-
+  // ALWAYS use real API in production - removed mock check
   try {
     const timestamp = Date.now();
 
