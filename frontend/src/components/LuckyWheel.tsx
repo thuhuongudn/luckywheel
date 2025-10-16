@@ -6,6 +6,7 @@ import { checkEligibility, sendSpinResult } from '../services/api';
 import PrizePopup from './PrizePopup';
 import Toast from './Toast';
 import '../styles/LuckyWheel.css';
+import spinSound from '../assets/audio/nhac-hieu-chuong-trinh-chiec-non-ky-dieu.mp3';
 
 const COUPON_LENGTH = 6;
 const PHONE_REGEX = /^0\d{9}$/;
@@ -29,8 +30,38 @@ const generateCouponCode = (length = COUPON_LENGTH): string => {
 
 const CAMPAIGN_ID = import.meta.env.VITE_CAMPAIGN_ID || 'lucky-wheel-2025-10-14';
 
+// Helper function to convert prizes with weights to 10 segments
+// Prizes with <10% weight get 1 slot, others get proportional slots
+const convertPrizesToSegments = (prizesWithWeights: any[]): Prize[] => {
+  const segments: Prize[] = [];
+  const totalWeight = prizesWithWeights.reduce((sum, p) => sum + p.weight, 0);
+
+  // Calculate how many segments each prize should get (out of 10)
+  prizesWithWeights.forEach((prize) => {
+    const percentage = (prize.weight / totalWeight) * 100;
+    const numSegments = percentage < 10 ? 1 : Math.round(percentage / 10);
+
+    // Add segments for this prize
+    for (let i = 0; i < numSegments; i++) {
+      segments.push(prize);
+    }
+  });
+
+  // If we have less than 10 segments, fill with the most common prize
+  while (segments.length < 10) {
+    const mostCommonPrize = prizesWithWeights.reduce((prev, current) =>
+      (prev.weight > current.weight) ? prev : current
+    );
+    segments.push(mostCommonPrize);
+  }
+
+  // If we have more than 10, trim to 10
+  return segments.slice(0, 10);
+};
+
 const LuckyWheel: React.FC = () => {
   const wheelRef = useRef<LuckyWheelRef | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const [customerName, setCustomerName] = useState('');
   const [phone, setPhone] = useState('');
   const [isSpinning, setIsSpinning] = useState(false);
@@ -45,6 +76,20 @@ const LuckyWheel: React.FC = () => {
   const [prizes, setPrizes] = useState<Prize[]>([]);
   const [isLoadingPrizes, setIsLoadingPrizes] = useState(true);
 
+  // Initialize audio
+  useEffect(() => {
+    audioRef.current = new Audio(spinSound);
+    audioRef.current.loop = true;
+    audioRef.current.volume = 0.5;
+
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    };
+  }, []);
+
   // Fetch prizes from backend on mount
   useEffect(() => {
     const fetchPrizes = async () => {
@@ -58,19 +103,36 @@ const LuckyWheel: React.FC = () => {
         const data = await response.json();
 
         if (data.success && data.data && data.data.length > 0) {
-          // Map Supabase prize_configs to Prize format
-          const formattedPrizes: Prize[] = data.data.map((p: any, index: number) => ({
+          // Map Supabase prize_configs to Prize format with weights
+          const prizesWithWeights = data.data.map((p: any) => ({
+            background: p.background_color || '#FFFFFF',
+            fonts: [{
+              text: `MÃ GIẢM GIÁ\n${p.prize_label}`,
+              fontSize: p.font_size || '11px',
+              fontColor: p.font_color || '#8B0000',
+              fontWeight: 'bold',
+              top: '25%',
+              lineHeight: '16px'
+            }],
+            value: p.prize_value,
+            weight: p.weight
+          }));
+
+          // Convert to 10 segments based on probability
+          const segments = convertPrizesToSegments(prizesWithWeights);
+
+          // Apply alternating red/white colors to segments
+          const coloredSegments = segments.map((seg, index) => ({
+            ...seg,
             background: index % 2 === 0 ? '#FFFFFF' : '#C41E3A',
             fonts: [{
-              text: p.prize_label,
-              fontSize: p.font_size || '13px',
+              ...seg.fonts[0],
               fontColor: index % 2 === 0 ? '#8B0000' : '#FFFFFF',
-              fontWeight: 'bold',
-              top: '28%'
-            }],
-            value: p.prize_value
+            }]
           }));
-          setPrizes(formattedPrizes);
+
+          console.log('[FRONTEND] Prize segments created:', coloredSegments.length, 'segments');
+          setPrizes(coloredSegments);
         } else {
           // Fallback to default prizes if API fails
           setPrizes([
@@ -97,15 +159,15 @@ const LuckyWheel: React.FC = () => {
     fetchPrizes();
   }, []);
 
-  // Cấu hình nút quay - Gold button (như ảnh 2)
+  // Cấu hình nút quay - Smaller gold button
   const buttons = [
-    { radius: '50%', background: '#FFD700', pointer: false },
-    { radius: '45%', background: '#FFA500', pointer: false },
+    { radius: '35%', background: '#FFD700', pointer: false },
+    { radius: '30%', background: '#FFA500', pointer: false },
     {
-      radius: '38%',
+      radius: '25%',
       background: '#FFD700',
       pointer: true,
-      fonts: [{ text: 'QUAY', fontSize: '20px', fontColor: '#8B0000', fontWeight: 'bold' }],
+      fonts: [{ text: 'QUAY', fontSize: '16px', fontColor: '#8B0000', fontWeight: 'bold' }],
     },
   ];
 
@@ -173,6 +235,12 @@ const LuckyWheel: React.FC = () => {
     setIsSpinning(true);
     setHasSpun(true);
 
+    // Play music
+    if (audioRef.current) {
+      audioRef.current.currentTime = 0;
+      audioRef.current.play().catch(err => console.log('Audio play failed:', err));
+    }
+
     // Bắt đầu quay
     wheelRef.current?.play();
 
@@ -208,6 +276,12 @@ const LuckyWheel: React.FC = () => {
       setTimeout(() => {
         wheelRef.current?.stop(finalIndex);
 
+        // Stop music when wheel stops
+        if (audioRef.current) {
+          audioRef.current.pause();
+          audioRef.current.currentTime = 0;
+        }
+
         setTimeout(() => {
           setIsSpinning(false);
           setCurrentPrize(serverPrizeValue);
@@ -221,6 +295,13 @@ const LuckyWheel: React.FC = () => {
       debugLog('Spin webhook failed', message);
 
       wheelRef.current?.stop(randomIndex);
+
+      // Stop music on error
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      }
+
       setIsSpinning(false);
       setShowPopup(false);
 
@@ -285,8 +366,8 @@ const LuckyWheel: React.FC = () => {
         ) : (
           <LuckyWheelCanvas
             ref={wheelRef}
-            width="480px"
-            height="480px"
+            width="340px"
+            height="340px"
             prizes={prizes}
             buttons={buttons}
             onStart={handleStart}
