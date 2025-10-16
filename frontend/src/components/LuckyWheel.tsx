@@ -127,8 +127,8 @@ const convertPrizesToSegments = (prizesWithWeights: WeightedPrize[]): WeightedPr
 const createWheelPrizes = (segments: WeightedPrize[]): Prize[] =>
   segments.map((seg, index) => {
     const isLight = index % 2 === 0;
-    const background = isLight ? '#FFFFFF' : '#C41E3A';
-    const fontColor = isLight ? '#8B0000' : '#FFFFFF';
+    const background = isLight ? '#FFFFFF' : '#007AFF';
+    const fontColor = isLight ? '#007AFF' : '#FFFFFF';
     return {
       background,
       fonts: createRadialFonts(seg.formattedLabel, fontColor),
@@ -517,8 +517,18 @@ const LuckyWheel: React.FC = () => {
   return (
     <div className="lucky-wheel-container">
       <div className="wheel-header">
-        <h1>🎉 VÒNG QUAY MAY MẮN 🎉</h1>
-        <p className="subtitle">Nhập thông tin để nhận mã giảm giá!</p>
+        <h1>ƯU ĐÃI CUỐI NĂM<br/>QUAY LÀ TRÚNG</h1>
+        <p className="subtitle">Nhà Thuốc Việt Nhật</p>
+      </div>
+
+      <div className="cta-banner">
+        <p>🎁 QUAY NGAY – NHẬN MÃ LIỀN TAY</p>
+      </div>
+
+      <div className="product-badges">
+        <span className="product-badge">Mason Natural</span>
+        <span className="product-badge">Olympian Labs</span>
+        <span className="product-badge">Careline</span>
       </div>
 
       <div className="form-section">
@@ -569,21 +579,29 @@ const LuckyWheel: React.FC = () => {
       </div>
 
       <div className="info-section">
-        <h3>🎁 Giải thưởng</h3>
+        <h3>💰 Giải thưởng hấp dẫn</h3>
         <ul className="prize-list">
           {prizeSummaries.map((label) => (
-            <li key={label}>💰 {label}</li>
+            <li key={label}>🎁 {label}</li>
           ))}
         </ul>
+        <p style={{ textAlign: 'center', fontSize: '16px', color: '#007AFF', fontWeight: '600', margin: '10px 0 0 0' }}>
+          100 giải • Tổng giá trị 5.000.000đ
+        </p>
 
         <div className="rules">
-          <h3>📋 Điều kiện tham gia</h3>
+          <h3>📋 Sản phẩm áp dụng</h3>
           <ul>
-            <li>Mỗi số điện thoại chỉ được quay 1 lần</li>
-            <li>Mã giảm giá sẽ được gửi qua Zalo</li>
-            <li>Mã có thời hạn sử dụng 7 ngày</li>
-            <li>Không áp dụng cùng các chương trình khác</li>
+            <li>Mason Natural - Thực phẩm chức năng Mỹ</li>
+            <li>Olympian Labs - Vitamin & Khoáng chất</li>
+            <li>Careline - Chăm sóc sức khỏe</li>
           </ul>
+        </div>
+
+        <div className="footer-note">
+          (*) Áp dụng cho <strong>100 suất quay</strong>, tổng giá trị giải thưởng <strong>5.000.000đ</strong><br/>
+          Thời gian áp dụng đến hết <strong>31/12/2025</strong><br/>
+          Mã giảm giá được gửi qua Zalo sau khi quay thành công
         </div>
       </div>
 
