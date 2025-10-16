@@ -108,10 +108,14 @@ const LuckyWheel: React.FC = () => {
   const validatePhone = (value: string): boolean => PHONE_REGEX.test(value);
 
   const handleStart = async () => {
+    console.log('🎯 [FRONTEND] handleStart called!');
     const trimmedName = customerName.trim();
     const sanitizedPhone = phone.replace(/[^\d]/g, '');
 
+    console.log('[FRONTEND] Input:', { name: trimmedName, phone: sanitizedPhone, isSpinning, hasSpun });
+
     if (isSpinning) {
+      console.log('[FRONTEND] Already spinning, returning');
       return;
     }
 
@@ -131,27 +135,30 @@ const LuckyWheel: React.FC = () => {
 
     if (!trimmedName || !validatePhone(sanitizedPhone) || hasSpun) {
       if (hasSpun) {
+        console.log('[FRONTEND] User already spun');
         setToastType('error');
         setToastMessage('Bạn đã quay rồi! Vui lòng kiểm tra Zalo để nhận mã giảm giá.');
       }
-      debugLog('Spin request blocked', { hasSpun, nameValid: !!trimmedName, phoneValid: validatePhone(sanitizedPhone), phone: maskPhone(sanitizedPhone) });
+      console.log('[FRONTEND] Validation failed, blocking spin:', { hasSpun, nameValid: !!trimmedName, phoneValid: validatePhone(sanitizedPhone) });
       return;
     }
 
+    console.log('[FRONTEND] Validation passed, checking eligibility...');
     try {
       const eligibility = await checkEligibility(sanitizedPhone, CAMPAIGN_ID);
+      console.log('[FRONTEND] Eligibility result:', eligibility);
       if (!eligibility.eligible) {
         setHasSpun(true);
         setToastType('error');
         setToastMessage(eligibility.message || 'Số điện thoại đã quay rồi! Vui lòng kiểm tra Zalo.');
-        debugLog('Eligibility rejected', eligibility);
+        console.log('[FRONTEND] Not eligible, stopping');
         return;
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Không thể kiểm tra điều kiện. Vui lòng thử lại sau.';
+      console.error('[FRONTEND] Eligibility check error:', error);
       setToastType('error');
       setToastMessage(message);
-      debugLog('Eligibility check failed', message);
       return;
     }
 
@@ -171,7 +178,7 @@ const LuckyWheel: React.FC = () => {
     const spinStart = Date.now();
 
     try {
-      debugLog('Dispatching spin webhook', {
+      console.log('📤 [FRONTEND] Sending spin request to backend...', {
         name: trimmedName,
         phone: maskPhone(sanitizedPhone),
         prize: fallbackPrizeValue,
