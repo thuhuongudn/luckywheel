@@ -17,8 +17,19 @@ const PORT = process.env.PORT || 3000;
 // Trust proxy (required for Heroku to get correct IP)
 app.set('trust proxy', 1);
 
-// Security middleware
-app.use(helmet());
+// Security middleware - Configure Helmet CSP for same-origin API calls
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      connectSrc: ["'self'"], // Allow fetch to same origin (API calls)
+      scriptSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"], // Allow inline styles for React
+      imgSrc: ["'self'", "data:"],
+      fontSrc: ["'self'", "https:", "data:"],
+    },
+  },
+}));
 app.use(express.json());
 
 // CORS - allow frontend domains

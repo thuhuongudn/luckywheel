@@ -49,8 +49,12 @@ const LuckyWheel: React.FC = () => {
   useEffect(() => {
     const fetchPrizes = async () => {
       try {
-        const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
-        const response = await fetch(`${backendUrl}/api/prizes/${CAMPAIGN_ID}`);
+        // Use relative URL in production (same-origin), localhost in dev
+        const backendUrl = import.meta.env.VITE_BACKEND_URL ||
+                          (import.meta.env.MODE === 'production' ? '' : 'http://localhost:3000');
+        const apiUrl = `${backendUrl}/api/prizes/${CAMPAIGN_ID}`;
+        console.log('[FRONTEND] Fetching prizes from:', apiUrl);
+        const response = await fetch(apiUrl);
         const data = await response.json();
 
         if (data.success && data.data && data.data.length > 0) {
