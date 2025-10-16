@@ -1,5 +1,4 @@
 import axios from 'axios';
-import CryptoJS from 'crypto-js';
 import type { WebhookPayload, WebhookResponse } from '../types';
 
 // SECURITY: All requests go through backend proxy, never directly to N8N
@@ -7,21 +6,7 @@ import type { WebhookPayload, WebhookResponse } from '../types';
 const BACKEND_API_URL = import.meta.env.VITE_BACKEND_URL || '';
 const SPIN_ENDPOINT = `${BACKEND_API_URL}/api/spin`;
 const CHECK_ENDPOINT = `${BACKEND_API_URL}/api/check-eligibility`;
-const API_SECRET = import.meta.env.VITE_API_SECRET || 'dev-secret-key-123456';
-const WEBHOOK_HEADER = 'lucky-wheel';
 const ENABLE_DEBUG_LOG = import.meta.env.DEV || import.meta.env.VITE_DEBUG_LOGS === 'true';
-
-let cachedApiKey = '';
-let cachedApiKeyInitialized = false;
-const getWebhookToken = (): string => {
-  if (cachedApiKeyInitialized) {
-    return cachedApiKey;
-  }
-  const value = import.meta.env.VITE_WEBHOOK_TOKEN;
-  cachedApiKey = typeof value === 'string' ? value : '';
-  cachedApiKeyInitialized = true;
-  return cachedApiKey;
-};
 
 const maskPhone = (value: string) => {
   if (!value) {
@@ -29,27 +14,19 @@ const maskPhone = (value: string) => {
   }
   return value.length <= 4 ? value : `${'*'.repeat(Math.max(0, value.length - 4))}${value.slice(-4)}`;
 };
+
 const maskCode = (value?: string) => {
   if (!value) {
     return value;
   }
   return value.length <= 2 ? value : `${value.slice(0, 1)}${'*'.repeat(Math.max(0, value.length - 2))}${value.slice(-1)}`;
 };
+
 const logDebug = (...args: unknown[]) => {
   if (ENABLE_DEBUG_LOG) {
     console.log('[LuckyWheel][API]', ...args);
   }
 };
-
-// Generate HMAC signature để xác thực request
-// IMPORTANT: Payload MUST match backend signature verification (phone, prize, campaign_id ONLY)
-// Backend validates: { phone, prize, campaign_id } - see server.js line 183
-type SignaturePayload = Pick<WebhookPayload, 'phone' | 'prize' | 'campaign_id'>;
-
-function generateSignature(payload: SignaturePayload, timestamp: number): string {
-  const message = JSON.stringify(payload) + timestamp;
-  return CryptoJS.HmacSHA256(message, API_SECRET).toString();
-}
 
 // Check eligibility - kiểm tra đã quay chưa
 export const checkEligibility = async (phone: string, campaignId: string): Promise<{
@@ -89,12 +66,8 @@ export const checkEligibility = async (phone: string, campaignId: string): Promi
 
 // Send spin result - gửi qua backend proxy (bảo mật)
 export const sendSpinResult = async (payload: WebhookPayload): Promise<WebhookResponse> => {
-  const apiKey = getWebhookToken();
-
   // ALWAYS use real API in production - removed mock check
   try {
-    const timestamp = Date.now();
-
     logDebug('Preparing spin payload', {
       endpoint: SPIN_ENDPOINT,
       name: payload.name,
@@ -104,27 +77,21 @@ export const sendSpinResult = async (payload: WebhookPayload): Promise<WebhookRe
       expires_at: payload.expires_at,
     });
 
-    // Tạo signature để xác thực (MUST match backend: phone, prize, campaign_id only)
-    const signaturePayload: SignaturePayload = {
-      phone: payload.phone,
-      prize: payload.prize,
-      campaign_id: payload.campaign_id,
-    };
-    const signature = generateSignature(signaturePayload, timestamp);
-
     // Gửi qua backend proxy (không expose N8N webhook)
+    // Backend sẽ xử lý authentication, rate limiting, và DB constraints
     const response = await axios.post<WebhookResponse>(
       SPIN_ENDPOINT,
       {
-        ...payload,
-        timestamp,
-        signature,
-        phone_hash: CryptoJS.SHA256(payload.phone).toString(),
+        phone: payload.phone,
+        name: payload.name,
+        campaign_id: payload.campaign_id,
+        prize: payload.prize,
+        code: payload.code,
+        expires_at: payload.expires_at,
       },
       {
         headers: {
           'Content-Type': 'application/json',
-          [WEBHOOK_HEADER]: apiKey,
         },
         timeout: 15000, // 15 seconds
       }

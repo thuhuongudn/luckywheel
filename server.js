@@ -2,7 +2,6 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
-const crypto = require('crypto-js');
 const axios = require('axios');
 const path = require('path');
 require('dotenv').config();
@@ -90,24 +89,11 @@ const spinLimiter = rateLimit({
 
 app.use('/api/', limiter);
 
-// Helper: Verify HMAC signature
-function verifySignature(payload, signature, timestamp) {
-  const secret = process.env.API_SECRET || 'change-me';
-
-  // Check timestamp (must be within 5 minutes)
-  const now = Date.now();
-  if (Math.abs(now - timestamp) > 5 * 60 * 1000) {
-    return false;
-  }
-
-  // Verify HMAC signature
-  const expectedSignature = crypto.HmacSHA256(
-    JSON.stringify(payload) + timestamp,
-    secret
-  ).toString();
-
-  return signature === expectedSignature;
-}
+// Helper: Verify HMAC signature (REMOVED - no longer needed)
+// Security now relies on:
+// 1. Rate limiting (spinLimiter)
+// 2. Database unique constraint on (campaign_id, phone_hash)
+// 3. Phone number hashing with secret pepper
 
 // Helper: Generate coupon code
 function generateCouponCode(length = 6) {
@@ -240,20 +226,18 @@ app.post('/api/check-eligibility', limiter, async (req, res) => {
 
 // Main spin endpoint
 app.post('/api/spin', spinLimiter, async (req, res) => {
-  const { phone, name, campaign_id, timestamp, signature } = req.body;
+  const { phone, name, campaign_id } = req.body;
 
   console.log('\n🎯 [API] /api/spin request received');
   console.log('📥 [API] Request body:', {
     phone: phone ? db.maskPhone(phone) : 'MISSING',
     name,
-    campaign_id,
-    timestamp: timestamp ? new Date(timestamp).toISOString() : 'MISSING',
-    hasSignature: !!signature
+    campaign_id
   });
 
   try {
     // 1. Validate required fields
-    if (!phone || !campaign_id || !timestamp || !signature) {
+    if (!phone || !campaign_id) {
       console.log('❌ [API] Missing required fields');
       return res.status(400).json({
         success: false,
@@ -387,9 +371,20 @@ app.post('/api/spin', spinLimiter, async (req, res) => {
   }
 });
 
-// Get campaign statistics (for admin)
+// Get campaign statistics (for admin only - requires authentication)
 app.get('/api/statistics/:campaignId', limiter, async (req, res) => {
   try {
+    // SECURITY: Require admin authentication
+    const authHeader = req.headers.authorization;
+    const adminToken = process.env.ADMIN_API_TOKEN || 'change-me-in-production';
+
+    if (!authHeader || authHeader !== `Bearer ${adminToken}`) {
+      return res.status(401).json({
+        success: false,
+        message: 'Unauthorized: Admin authentication required'
+      });
+    }
+
     const { campaignId } = req.params;
     const stats = await db.getSpinStatistics(campaignId);
 
