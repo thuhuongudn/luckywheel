@@ -1,7 +1,7 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { LuckyWheel as LuckyWheelCanvas } from '@lucky-canvas/react';
 import type { LuckyWheelRef } from '@lucky-canvas/react';
-import type { Prize } from '../types';
+import type { Prize, PrizeFont } from '../types';
 import { checkEligibility, sendSpinResult } from '../services/api';
 import PrizePopup from './PrizePopup';
 import Toast from './Toast';
@@ -12,8 +12,21 @@ import winningSound from '../assets/audio/winning_notification.MP3';
 const COUPON_LENGTH = 6;
 const PHONE_REGEX = /^0\d{9}$/;
 const ENABLE_DEBUG = import.meta.env.DEV || import.meta.env.VITE_DEBUG_LOGS === 'true';
+const CAMPAIGN_ID = import.meta.env.VITE_CAMPAIGN_ID || 'lucky-wheel-2025-10-14';
+
+const MIN_WHEEL_SIZE = 220;
+const MAX_WHEEL_SIZE = 340;
+const VIEWPORT_RATIO = 0.7;
+const RESULT_POPUP_DELAY = 500;
+
+type WeightedPrize = {
+  value: number;
+  weight: number;
+  formattedLabel: string;
+};
 
 const maskPhone = (value: string) => (value.length <= 4 ? value : `${'*'.repeat(Math.max(0, value.length - 4))}${value.slice(-4)}`);
+
 const debugLog = (...args: unknown[]) => {
   if (ENABLE_DEBUG) {
     console.log('[LuckyWheel]', ...args);
@@ -29,45 +42,116 @@ const generateCouponCode = (length = COUPON_LENGTH): string => {
   return result;
 };
 
-const CAMPAIGN_ID = import.meta.env.VITE_CAMPAIGN_ID || 'lucky-wheel-2025-10-14';
+const formatAmountFromLabel = (prizeLabel: string | null | undefined, fallbackValue: number): string => {
+  const fallback = new Intl.NumberFormat('vi-VN').format(fallbackValue);
+  if (!prizeLabel) {
+    return fallback;
+  }
 
-// Helper function to convert prizes with weights to 10 segments
-// Prizes with <10% weight get 1 slot, others get proportional slots
-const convertPrizesToSegments = (prizesWithWeights: any[]): Prize[] => {
-  const segments: Prize[] = [];
+  const sanitized = prizeLabel
+    .replace(/Giảm\s+/i, '')
+    .replace(/đ/gi, '')
+    .replace(/,/g, '.')
+    .trim();
+
+  const digits = sanitized.replace(/[^0-9]/g, '');
+  if (!digits) {
+    return fallback;
+  }
+
+  const numericValue = Number.parseInt(digits, 10);
+  if (Number.isNaN(numericValue) || numericValue <= 0) {
+    return fallback;
+  }
+
+  return new Intl.NumberFormat('vi-VN').format(numericValue);
+};
+
+const formatPrizeLabel = (prizeLabel: string | null | undefined, fallbackValue: number): string => {
+  const amount = formatAmountFromLabel(prizeLabel, fallbackValue);
+  return `Giảm ${amount} đ`;
+};
+
+const createRadialFonts = (label: string, fontColor: string): PrizeFont[] => {
+  const trimmed = label.trim();
+  const match = trimmed.match(/^Giảm\s+(.*)$/i);
+  const amountText = match && match[1] ? match[1] : trimmed;
+
+  return [
+    {
+      text: 'Giảm',
+      top: '14%',
+      fontSize: '14px',
+      fontColor,
+      fontWeight: 'bold',
+      lineHeight: '18px',
+    },
+    {
+      text: amountText,
+      top: '44%',
+      fontSize: '18px',
+      fontColor,
+      fontWeight: 'bold',
+      lineHeight: '20px',
+    },
+  ];
+};
+
+const convertPrizesToSegments = (prizesWithWeights: WeightedPrize[]): WeightedPrize[] => {
+  if (!prizesWithWeights.length) {
+    return [];
+  }
+
+  const segments: WeightedPrize[] = [];
   const totalWeight = prizesWithWeights.reduce((sum, p) => sum + p.weight, 0);
 
-  // Calculate how many segments each prize should get (out of 10)
   prizesWithWeights.forEach((prize) => {
-    const percentage = (prize.weight / totalWeight) * 100;
-    const numSegments = percentage < 10 ? 1 : Math.round(percentage / 10);
-
-    // Add segments for this prize
-    for (let i = 0; i < numSegments; i++) {
+    const percentage = totalWeight === 0 ? 0 : (prize.weight / totalWeight) * 100;
+    const desiredSegments = percentage < 10 ? 1 : Math.round(percentage / 10);
+    const slotCount = Math.max(1, desiredSegments);
+    for (let i = 0; i < slotCount; i += 1) {
       segments.push(prize);
     }
   });
 
-  // If we have less than 10 segments, fill with the most common prize
   while (segments.length < 10) {
-    const mostCommonPrize = prizesWithWeights.reduce((prev, current) =>
-      (prev.weight > current.weight) ? prev : current
-    );
+    const mostCommonPrize = prizesWithWeights.reduce((prev, current) => (
+      prev.weight > current.weight ? prev : current
+    ));
     segments.push(mostCommonPrize);
   }
 
-  // If we have more than 10, trim to 10
   return segments.slice(0, 10);
 };
 
-const RESULT_POPUP_DELAY = 500;
+const createWheelPrizes = (segments: WeightedPrize[]): Prize[] =>
+  segments.map((seg, index) => {
+    const isLight = index % 2 === 0;
+    const background = isLight ? '#FFFFFF' : '#C41E3A';
+    const fontColor = isLight ? '#8B0000' : '#FFFFFF';
+    return {
+      background,
+      fonts: createRadialFonts(seg.formattedLabel, fontColor),
+      value: seg.value,
+    };
+  });
+
+const DEFAULT_WEIGHTED_PRIZES: WeightedPrize[] = [
+  { value: 20000, weight: 40, formattedLabel: 'Giảm 20.000 đ' },
+  { value: 30000, weight: 30, formattedLabel: 'Giảm 30.000 đ' },
+  { value: 50000, weight: 20, formattedLabel: 'Giảm 50.000 đ' },
+  { value: 100000, weight: 10, formattedLabel: 'Giảm 100.000 đ' },
+];
+
+const DEFAULT_SUMMARIES = DEFAULT_WEIGHTED_PRIZES.map((item) => item.formattedLabel);
+const DEFAULT_WHEEL_PRIZES = createWheelPrizes(convertPrizesToSegments(DEFAULT_WEIGHTED_PRIZES));
 
 const LuckyWheel: React.FC = () => {
   const wheelRef = useRef<LuckyWheelRef | null>(null);
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const spinAudioRef = useRef<HTMLAudioElement | null>(null);
   const winningAudioRef = useRef<HTMLAudioElement | null>(null);
-  const pendingResultRef = useRef<{ prizeValue: number; prizeCode: string } | null>(null);
+  const pendingResultRef = useRef<{ prizeValue: number; prizeCode: string; expiresAt: string | null } | null>(null);
   const hasPrimedWinningAudioRef = useRef(false);
   const revealTimeoutRef = useRef<number | null>(null);
   const [customerName, setCustomerName] = useState('');
@@ -81,21 +165,28 @@ const LuckyWheel: React.FC = () => {
   const [hasSpun, setHasSpun] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [toastType, setToastType] = useState<'error' | 'success' | 'info'>('error');
-  const [prizes, setPrizes] = useState<Prize[]>([]);
+  const [prizes, setPrizes] = useState<Prize[]>(DEFAULT_WHEEL_PRIZES);
+  const [prizeSummaries, setPrizeSummaries] = useState<string[]>(DEFAULT_SUMMARIES);
   const [isLoadingPrizes, setIsLoadingPrizes] = useState(true);
-  const [wheelSize, setWheelSize] = useState(340);
+  const [wheelSize, setWheelSize] = useState(MAX_WHEEL_SIZE);
+  const [expiresAt, setExpiresAt] = useState<string | null>(null);
+
+  const applyPrizes = useCallback((weightedPrizes: WeightedPrize[]) => {
+    const normalized = weightedPrizes.length ? weightedPrizes : DEFAULT_WEIGHTED_PRIZES;
+    const segments = convertPrizesToSegments(normalized);
+    setPrizes(createWheelPrizes(segments));
+    const uniqueLabels = Array.from(new Set(normalized.map((item) => item.formattedLabel)));
+    setPrizeSummaries(uniqueLabels);
+  }, []);
 
   useEffect(() => {
     if (typeof window === 'undefined') {
       return () => undefined;
     }
 
-    const minSize = 220;
-    const baseMaxSize = 340;
-
     const computeWheelSize = () => {
       const viewportWidth = window.innerWidth;
-      const viewportCap = Math.min(baseMaxSize, Math.round(viewportWidth * 0.7));
+      const viewportCap = Math.min(MAX_WHEEL_SIZE, Math.round(viewportWidth * VIEWPORT_RATIO));
       const element = wrapperRef.current;
 
       if (element) {
@@ -103,15 +194,13 @@ const LuckyWheel: React.FC = () => {
         const paddingLeft = parseFloat(styles.paddingLeft) || 0;
         const paddingRight = parseFloat(styles.paddingRight) || 0;
         const availableWidth = Math.max(0, element.clientWidth - paddingLeft - paddingRight);
-        const candidateSize = Math.min(viewportCap, Math.floor(availableWidth));
-        const sizeWithMin = Math.max(minSize, candidateSize);
-        const nextSize = Math.min(sizeWithMin, viewportCap, Math.floor(availableWidth));
+        const constrainedByElement = Math.min(viewportCap, Math.floor(availableWidth));
+        const nextSize = Math.max(MIN_WHEEL_SIZE, Math.min(MAX_WHEEL_SIZE, constrainedByElement));
         setWheelSize((prev) => (Math.abs(prev - nextSize) > 0.5 ? nextSize : prev));
         return;
       }
 
-      const fallbackSize = viewportCap;
-      setWheelSize((prev) => (Math.abs(prev - fallbackSize) > 0.5 ? fallbackSize : prev));
+      setWheelSize((prev) => (Math.abs(prev - viewportCap) > 0.5 ? viewportCap : prev));
     };
 
     computeWheelSize();
@@ -176,6 +265,7 @@ const LuckyWheel: React.FC = () => {
 
     if (!pendingResult) {
       setIsSpinning(false);
+      setExpiresAt(null);
       return;
     }
 
@@ -191,6 +281,7 @@ const LuckyWheel: React.FC = () => {
       setIsSpinning(false);
       setCurrentPrize(pendingResult.prizeValue);
       setPrizeCode(pendingResult.prizeCode);
+      setExpiresAt(pendingResult.expiresAt);
       setShowPopup(true);
       revealTimeoutRef.current = null;
     }, RESULT_POPUP_DELAY);
@@ -200,72 +291,37 @@ const LuckyWheel: React.FC = () => {
   useEffect(() => {
     const fetchPrizes = async () => {
       try {
-        // Use relative URL in production (same-origin), localhost in dev
         const backendUrl = import.meta.env.VITE_BACKEND_URL ||
-                          (import.meta.env.MODE === 'production' ? '' : 'http://localhost:3000');
+          (import.meta.env.MODE === 'production' ? '' : 'http://localhost:3000');
         const apiUrl = `${backendUrl}/api/prizes/${CAMPAIGN_ID}`;
         console.log('[FRONTEND] Fetching prizes from:', apiUrl);
         const response = await fetch(apiUrl);
         const data = await response.json();
 
-        if (data.success && data.data && data.data.length > 0) {
-          // Map Supabase prize_configs to Prize format with weights
-          const prizesWithWeights = data.data.map((p: any) => ({
-            background: p.background_color || '#FFFFFF',
-            fonts: [{
-              text: `Giảm ${p.prize_label}`,
-              fontSize: p.font_size || '14px',
-              fontColor: p.font_color || '#8B0000',
-              fontWeight: 'bold',
-              top: '16%',
-              lineHeight: '18px'
-            }],
-            value: p.prize_value,
-            weight: p.weight
-          }));
+        if (data.success && Array.isArray(data.data) && data.data.length > 0) {
+          const normalized: WeightedPrize[] = data.data
+            .map((p: any) => ({
+              value: Number(p.prize_value),
+              weight: Math.max(1, Number(p.weight) || 1),
+              formattedLabel: formatPrizeLabel(p.prize_label, Number(p.prize_value)),
+            }))
+            .filter((item: WeightedPrize) => Number.isFinite(item.value) && item.value > 0);
 
-          // Convert to 10 segments based on probability
-          const segments = convertPrizesToSegments(prizesWithWeights);
-
-          // Apply alternating red/white colors to segments
-          const coloredSegments = segments.map((seg, index) => ({
-            ...seg,
-            background: index % 2 === 0 ? '#FFFFFF' : '#C41E3A',
-            fonts: seg.fonts?.length
-              ? [{
-                ...seg.fonts[0],
-                fontColor: index % 2 === 0 ? '#8B0000' : '#FFFFFF',
-              }]
-              : seg.fonts,
-          }));
-
-          console.log('[FRONTEND] Prize segments created:', coloredSegments.length, 'segments');
-          setPrizes(coloredSegments);
+          console.log('[FRONTEND] Prize segments source count:', normalized.length);
+          applyPrizes(normalized);
         } else {
-          // Fallback to default prizes if API fails
-          setPrizes([
-            { background: '#FFFFFF', fonts: [{ text: 'Giảm 20.000đ', fontSize: '14px', fontColor: '#8B0000', fontWeight: 'bold', top: '16%', lineHeight: '18px' }], value: 20000 },
-            { background: '#C41E3A', fonts: [{ text: 'Giảm 30.000đ', fontSize: '14px', fontColor: '#FFFFFF', fontWeight: 'bold', top: '16%', lineHeight: '18px' }], value: 30000 },
-            { background: '#FFFFFF', fonts: [{ text: 'Giảm 50.000đ', fontSize: '14px', fontColor: '#8B0000', fontWeight: 'bold', top: '16%', lineHeight: '18px' }], value: 50000 },
-            { background: '#C41E3A', fonts: [{ text: 'Giảm 100.000đ', fontSize: '14px', fontColor: '#FFFFFF', fontWeight: 'bold', top: '16%', lineHeight: '18px' }], value: 100000 },
-          ]);
+          applyPrizes([]);
         }
       } catch (error) {
         console.error('Failed to fetch prizes:', error);
-        // Fallback prizes
-        setPrizes([
-          { background: '#FFFFFF', fonts: [{ text: 'Giảm 20.000đ', fontSize: '14px', fontColor: '#8B0000', fontWeight: 'bold', top: '16%', lineHeight: '18px' }], value: 20000 },
-          { background: '#C41E3A', fonts: [{ text: 'Giảm 30.000đ', fontSize: '14px', fontColor: '#FFFFFF', fontWeight: 'bold', top: '16%', lineHeight: '18px' }], value: 30000 },
-          { background: '#FFFFFF', fonts: [{ text: 'Giảm 50.000đ', fontSize: '14px', fontColor: '#8B0000', fontWeight: 'bold', top: '16%', lineHeight: '18px' }], value: 50000 },
-          { background: '#C41E3A', fonts: [{ text: 'Giảm 100.000đ', fontSize: '14px', fontColor: '#FFFFFF', fontWeight: 'bold', top: '16%', lineHeight: '18px' }], value: 100000 },
-        ]);
+        applyPrizes([]);
       } finally {
         setIsLoadingPrizes(false);
       }
     };
 
     fetchPrizes();
-  }, []);
+  }, [applyPrizes]);
 
   // Cấu hình nút quay - Smaller gold button
   const buttons = [
@@ -343,6 +399,7 @@ const LuckyWheel: React.FC = () => {
     setIsSpinning(true);
     setHasSpun(true);
     pendingResultRef.current = null;
+    setExpiresAt(null);
 
     // Play music
     if (winningAudioRef.current) {
@@ -378,6 +435,7 @@ const LuckyWheel: React.FC = () => {
     const randomIndex = Math.floor(Math.random() * prizes.length);
     const fallbackPrizeValue = prizes[randomIndex].value;
     const spinStart = Date.now();
+    const expiresAtIso = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
 
     try {
       console.log('📤 [FRONTEND] Sending spin request to backend...', {
@@ -394,6 +452,7 @@ const LuckyWheel: React.FC = () => {
         prize: fallbackPrizeValue,
         timestamp: Date.now(),
         user_agent: navigator.userAgent,
+        expires_at: expiresAtIso,
       });
 
       const serverPrizeValue = response.prize ?? fallbackPrizeValue;
@@ -403,9 +462,13 @@ const LuckyWheel: React.FC = () => {
       const elapsed = Date.now() - spinStart;
       const remaining = Math.max(0, minSpinDuration - elapsed);
 
+      const resolvedExpiresAt = response.expires_at ?? expiresAtIso;
+      setExpiresAt(resolvedExpiresAt);
+
       pendingResultRef.current = {
         prizeValue: serverPrizeValue,
         prizeCode: response.code || generatedCode,
+        expiresAt: resolvedExpiresAt,
       };
 
       setTimeout(() => {
@@ -418,6 +481,7 @@ const LuckyWheel: React.FC = () => {
 
       wheelRef.current?.stop(randomIndex);
       pendingResultRef.current = null;
+      setExpiresAt(null);
 
       if (revealTimeoutRef.current) {
         clearTimeout(revealTimeoutRef.current);
@@ -507,10 +571,9 @@ const LuckyWheel: React.FC = () => {
       <div className="info-section">
         <h3>🎁 Giải thưởng</h3>
         <ul className="prize-list">
-          <li>💰 Giảm 20.000đ</li>
-          <li>💰 Giảm 30.000đ</li>
-          <li>💰 Giảm 50.000đ</li>
-          <li>💰 Giảm 100.000đ</li>
+          {prizeSummaries.map((label) => (
+            <li key={label}>💰 {label}</li>
+          ))}
         </ul>
 
         <div className="rules">
@@ -530,12 +593,14 @@ const LuckyWheel: React.FC = () => {
           code={prizeCode}
           phone={phone}
           name={customerName.trim()}
+          expiresAt={expiresAt || undefined}
           onClose={() => {
             if (winningAudioRef.current) {
               winningAudioRef.current.pause();
               winningAudioRef.current.currentTime = 0;
             }
             setShowPopup(false);
+            setExpiresAt(null);
           }}
         />
       )}

@@ -6,13 +6,33 @@ interface PrizePopupProps {
   code?: string;
   name: string;
   phone: string;
+  expiresAt?: string;
   onClose: () => void;
 }
 
-const PrizePopup: React.FC<PrizePopupProps> = ({ prize, code, name, phone, onClose }) => {
+const PrizePopup: React.FC<PrizePopupProps> = ({ prize, code, name, phone, expiresAt, onClose }) => {
   const formatPrice = (value: number) => {
     return new Intl.NumberFormat('vi-VN').format(value);
   };
+
+  const formatExpiry = (value?: string) => {
+    if (!value) {
+      return '';
+    }
+
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      return '';
+    }
+
+    return new Intl.DateTimeFormat('vi-VN', {
+      dateStyle: 'short',
+      timeStyle: 'short',
+      hour12: false,
+    }).format(date);
+  };
+
+  const formattedExpiry = formatExpiry(expiresAt);
 
   return (
     <div className="popup-overlay" onClick={onClose}>
@@ -30,6 +50,13 @@ const PrizePopup: React.FC<PrizePopupProps> = ({ prize, code, name, phone, onClo
           <div className="popup-prize">
             {formatPrice(prize)}đ
           </div>
+
+          {formattedExpiry && (
+            <div className="popup-expiry">
+              <span>HSD đến:</span>
+              <strong>{formattedExpiry}</strong>
+            </div>
+          )}
 
           {code && (
             <div className="popup-code">

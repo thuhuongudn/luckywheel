@@ -27,6 +27,7 @@ export interface WebhookPayload {
   prize: number;
   timestamp: number;
   user_agent: string;
+  expires_at?: string;
 }
 
 export interface WebhookResponse {
@@ -34,4 +35,5 @@ export interface WebhookResponse {
   message: string;
   code?: string;
   prize?: number;
+  expires_at?: string;
 }

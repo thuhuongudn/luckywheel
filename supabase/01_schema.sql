@@ -28,6 +28,7 @@ CREATE TABLE IF NOT EXISTS lucky_wheel_spins (
   -- Prize Information
   prize INTEGER NOT NULL CHECK (prize IN (20000, 30000, 50000, 100000)),
   coupon_code TEXT NOT NULL UNIQUE,   -- Generated coupon code (e.g., ABC123)
+  expires_at TIMESTAMPTZ DEFAULT (NOW() + INTERVAL '7 days'),
 
   -- Metadata
   ip_address TEXT,
@@ -73,6 +74,7 @@ COMMENT ON TABLE lucky_wheel_spins IS 'Stores all lucky wheel spin results with 
 COMMENT ON COLUMN lucky_wheel_spins.phone_hash IS 'SHA256(phone + SECRET_PEPPER) - never store raw phone numbers';
 COMMENT ON COLUMN lucky_wheel_spins.phone_masked IS 'Masked phone for admin view (091***8417)';
 COMMENT ON COLUMN lucky_wheel_spins.phone_plain IS 'Raw phone number stored securely for automation workflows';
+COMMENT ON COLUMN lucky_wheel_spins.expires_at IS 'Absolute expiration timestamp for the issued coupon code (defaults to created_at + 7 days)';
 COMMENT ON COLUMN lucky_wheel_spins.n8n_sent IS 'Whether Zalo message was successfully sent via N8N';
 COMMENT ON COLUMN lucky_wheel_spins.n8n_retry_count IS 'Number of retry attempts if N8N failed';
 

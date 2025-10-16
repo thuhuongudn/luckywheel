@@ -137,6 +137,7 @@ async function sendToN8N(spinData) {
     customer_name: spinData.customerName,
     prize: spinData.prize,
     coupon_code: spinData.couponCode,
+    expires_at: spinData.expiresAt,
     timestamp: Date.now(),
     user_agent: spinData.userAgent,
     ip: spinData.ipAddress,
@@ -147,7 +148,8 @@ async function sendToN8N(spinData) {
     campaign_id: payload.campaign_id,
     phone_masked: payload.phone_masked,
     prize: payload.prize,
-    coupon_code: payload.coupon_code
+    coupon_code: payload.coupon_code,
+    expires_at: payload.expires_at
   });
 
   try {
@@ -215,7 +217,8 @@ app.post('/api/check-eligibility', limiter, async (req, res) => {
         message: 'Số điện thoại đã quay mã, vui lòng kiểm tra Zalo!',
         already_spun: true,
         spun_at: spin.created_at,
-        prize: spin.prize
+        prize: spin.prize,
+        expires_at: spin.expires_at
       });
     }
 
@@ -277,6 +280,9 @@ app.post('/api/spin', spinLimiter, async (req, res) => {
     const couponCode = generateCouponCode();
     console.log(`🎟️  [API] Generated coupon: ${couponCode}`);
 
+    const expiresAtIso = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+    console.log(`🗓️  [API] Calculated expiry: ${expiresAtIso}`);
+
     // 5. Save to database IMMEDIATELY (DB constraint will prevent duplicates)
     console.log('💾 [API] Calling db.saveSpin...');
     let spinRecord;
@@ -288,7 +294,8 @@ app.post('/api/spin', spinLimiter, async (req, res) => {
         prize: prize_value,
         couponCode: couponCode,
         ipAddress: req.ip,
-        userAgent: req.get('user-agent')
+        userAgent: req.get('user-agent'),
+        expiresAt: expiresAtIso
       });
 
       console.log(`✅ [SPIN] Saved to DB successfully: ${spinRecord?.id}`);
@@ -297,7 +304,8 @@ app.post('/api/spin', spinLimiter, async (req, res) => {
         campaign_id: spinRecord?.campaign_id,
         prize: spinRecord?.prize,
         coupon_code: spinRecord?.coupon_code,
-        phone_masked: spinRecord?.phone_masked
+        phone_masked: spinRecord?.phone_masked,
+        expires_at: spinRecord?.expires_at
       });
     } catch (saveError) {
       console.error('❌ [API] saveSpin threw error:', saveError.message);
@@ -314,7 +322,8 @@ app.post('/api/spin', spinLimiter, async (req, res) => {
           already_spun: true,
           spun_at: existingSpin?.created_at,
           prize: existingSpin?.prize,
-          coupon_code: existingSpin?.coupon_code
+          coupon_code: existingSpin?.coupon_code,
+          expires_at: existingSpin?.expires_at
         });
       }
       // Re-throw other errors
@@ -328,7 +337,8 @@ app.post('/api/spin', spinLimiter, async (req, res) => {
       message: 'Mã giảm giá sẽ được gửi qua Zalo trong vài giây',
       code: couponCode,
       prize: prize_value,
-      phone_masked: db.maskPhone(phone)
+      phone_masked: db.maskPhone(phone),
+      expires_at: spinRecord?.expires_at || expiresAtIso
     };
     console.log('✅ [API] Response:', responseData);
     res.json(responseData);
@@ -342,7 +352,8 @@ app.post('/api/spin', spinLimiter, async (req, res) => {
       prize: prize_value,
       couponCode: couponCode,
       ipAddress: req.ip,
-      userAgent: req.get('user-agent')
+      userAgent: req.get('user-agent'),
+      expiresAt: spinRecord?.expires_at || expiresAtIso
     }).then(result => {
       // Update N8N status in database
       db.updateN8NStatus(

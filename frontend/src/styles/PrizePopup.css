@@ -104,6 +104,27 @@
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+.popup-expiry {
+  margin: 10px auto 0;
+  padding: 10px 16px;
+  border-radius: 8px;
+  background: #fff5f0;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid rgba(255, 107, 53, 0.4);
+  color: #8b2c0f;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.popup-expiry strong {
+  font-size: 16px;
+  letter-spacing: 0.4px;
+  color: #ff6b35;
+}
+
 .popup-code {
   background: #f8f9fa;
   border-radius: 10px;

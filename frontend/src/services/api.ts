@@ -101,6 +101,7 @@ export const sendSpinResult = async (payload: WebhookPayload): Promise<WebhookRe
       phone: maskPhone(payload.phone),
       code: maskCode(payload.code) ?? 'N/A',
       prize: payload.prize,
+      expires_at: payload.expires_at,
     });
 
     // Tạo signature để xác thực (MUST match backend: phone, prize, campaign_id only)
@@ -133,6 +134,7 @@ export const sendSpinResult = async (payload: WebhookPayload): Promise<WebhookRe
       success: response.data.success,
       message: response.data.message,
       code: maskCode(response.data.code ?? payload.code) ?? 'N/A',
+      expires_at: response.data.expires_at ?? payload.expires_at,
     });
     return response.data;
   } catch (error) {
@@ -146,6 +148,7 @@ export const sendSpinResult = async (payload: WebhookPayload): Promise<WebhookRe
           message: 'Mock fallback: kết quả quay đã được ghi nhận',
           code: payload.code || 'MOCK-FALLBACK',
           prize: payload.prize,
+          expires_at: payload.expires_at,
         };
       }
       throw new Error(message);
