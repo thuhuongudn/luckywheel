@@ -7,6 +7,7 @@ declare module '@lucky-canvas/react' {
     fontSize?: string;
     fontColor?: string;
     fontWeight?: string | number;
+    lineHeight?: string;
   }
 
   export interface LuckyWheelPrizeConfig {

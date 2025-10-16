@@ -154,7 +154,7 @@
               inset 0 2px 10px rgba(255, 255, 255, 0.2);
   border: 5px solid #FFD700;
   position: relative;
-  width: fit-content;
+  width: min(100%, 420px);
 }
 
 /* Add visible border around the actual wheel canvas */
@@ -320,8 +320,8 @@
 
   .wheel-wrapper > div,
   .wheel-loading {
-    width: min(300px, calc(100vw - 60px)) !important;
-    height: min(300px, calc(100vw - 60px)) !important;
+    max-width: min(340px, calc(100vw - 60px));
+    max-height: min(340px, calc(100vw - 60px));
   }
 
   .wheel-wrapper::before,

@@ -1,6 +1,15 @@
+export interface PrizeFont {
+  text: string;
+  top?: string;
+  fontSize?: string;
+  fontColor?: string;
+  fontWeight?: string;
+  lineHeight?: string;
+}
+
 export interface Prize {
   background: string;
-  fonts: { text: string; top?: string; fontSize?: string; fontColor?: string; fontWeight?: string }[];
+  fonts: PrizeFont[];
   value: number; // Giá trị mã giảm giá (20000, 30000, 50000, 100000)
 }
 
