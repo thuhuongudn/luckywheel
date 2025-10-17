@@ -157,6 +157,62 @@ async function sendToN8N(spinData) {
   }
 }
 
+// Helper: Auto-create Haravan discount (async, fire-and-forget)
+async function createHaravanDiscountAsync(spinRecord, campaignId, expiresAt) {
+  try {
+    console.log('📝 [HARAVAN] Creating discount for spin:', spinRecord.id);
+
+    // Create discount in Haravan
+    const discount = await haravan.createDiscount({
+      code: spinRecord.coupon_code,
+      value: spinRecord.prize,
+      starts_at: spinRecord.created_at,
+      ends_at: expiresAt,
+      campaignId: campaignId
+    });
+
+    console.log('🎉 [HARAVAN] Discount created:', {
+      discountId: discount.discountId,
+      code: discount.code,
+      is_promotion: discount.is_promotion,
+      times_used: discount.times_used,
+      usage_limit: discount.usage_limit
+    });
+
+    // Calculate status based on Haravan rules
+    const status = haravan.calculateStatus(
+      discount.is_promotion,
+      discount.times_used,
+      discount.usage_limit
+    );
+
+    console.log('📊 [HARAVAN] Calculated status:', status);
+
+    // Update database with Haravan data
+    const { error } = await supabase
+      .from('lucky_wheel_spins')
+      .update({
+        discount_id: discount.discountId,
+        is_promotion: discount.is_promotion,
+        times_used: discount.times_used,
+        usage_limit: discount.usage_limit,
+        status: status
+      })
+      .eq('id', spinRecord.id);
+
+    if (error) {
+      throw new Error(`Database update failed: ${error.message}`);
+    }
+
+    console.log('✅ [HARAVAN] Discount created and saved successfully:', discount.discountId);
+
+  } catch (error) {
+    console.error('❌ [HARAVAN] Auto-create error:', error.message);
+    // Re-throw to be caught by .catch() in calling code
+    throw error;
+  }
+}
+
 // =============================================================================
 // API ROUTES
 // =============================================================================
@@ -314,6 +370,13 @@ app.post('/api/spin', spinLimiter, async (req, res) => {
       // Re-throw other errors
       throw saveError;
     }
+
+    // 6. Auto-create Haravan discount (fire-and-forget, don't block response)
+    console.log('🎫 [HARAVAN] Auto-creating discount asynchronously...');
+    createHaravanDiscountAsync(spinRecord, campaign_id, expiresAtIso).catch(err => {
+      console.error('❌ [HARAVAN] Auto-create failed:', err.message);
+      // Don't fail the spin, admin can manually create later
+    });
 
     // 7. Return success to frontend IMMEDIATELY (150-200ms total)
     console.log('📤 [API] Sending success response to frontend');
