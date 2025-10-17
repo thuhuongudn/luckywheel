@@ -153,7 +153,9 @@
 }
 
 .text-input::placeholder {
-  color: rgba(17, 17, 17, 0.4);
+  color: rgba(17, 17, 17, 0.5);
+  font-family: var(--font-body);
+  font-weight: 500;
 }
 
 .text-input:focus {

@@ -72,18 +72,20 @@ const createRadialFonts = (label: string, fontColor: string): PrizeFont[] => {
     {
       text: 'Giảm',
       top: '14%',
-      fontSize: '14px',
+      fontSize: '16px',
       fontColor,
-      fontWeight: 'bold',
-      lineHeight: '18px',
+      fontWeight: '800',
+      lineHeight: '20px',
+      fontFamily: 'Space Grotesk, sans-serif',
     },
     {
       text: amountText,
-      top: '44%',
-      fontSize: '18px',
+      top: '42%',
+      fontSize: '22px',
       fontColor,
-      fontWeight: 'bold',
-      lineHeight: '20px',
+      fontWeight: '800',
+      lineHeight: '26px',
+      fontFamily: 'DM Sans, monospace',
     },
   ];
 };
@@ -118,8 +120,8 @@ const convertPrizesToSegments = (prizesWithWeights: WeightedPrize[]): WeightedPr
 const createWheelPrizes = (segments: WeightedPrize[]): Prize[] =>
   segments.map((seg, index) => {
     const isLight = index % 2 === 0;
-    const background = isLight ? '#FFFFFF' : '#007AFF';
-    const fontColor = isLight ? '#007AFF' : '#FFFFFF';
+    const background = isLight ? '#FFFFFF' : '#00E5A8'; // White or Cyber Blue
+    const fontColor = '#111111'; // Always black for high contrast
     return {
       background,
       fonts: createRadialFonts(seg.formattedLabel, fontColor),
@@ -313,15 +315,15 @@ const LuckyWheel: React.FC = () => {
     fetchPrizes();
   }, [applyPrizes]);
 
-  // Cấu hình nút quay - Smaller gold button
+  // Cấu hình nút quay - Neubrutalism style
   const buttons = [
-    { radius: '35%', background: '#FFD700', pointer: false },
-    { radius: '30%', background: '#FFA500', pointer: false },
+    { radius: '35%', background: '#FFD93D', pointer: false }, // Sun Yellow
+    { radius: '30%', background: '#111111', pointer: false }, // Black border
     {
       radius: '25%',
-      background: '#FFD700',
+      background: '#FFD93D', // Sun Yellow
       pointer: true,
-      fonts: [{ text: 'QUAY', fontSize: '16px', fontColor: '#8B0000', fontWeight: 'bold' }],
+      fonts: [{ text: 'QUAY', fontSize: '18px', fontColor: '#111111', fontWeight: '800', fontFamily: 'FZ Poppins, Poppins, sans-serif' }],
     },
   ];
 

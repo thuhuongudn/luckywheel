@@ -1,18 +1,20 @@
+/* PrizePopup - Neubrutalism Design */
+
 .popup-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.7);
+  background-color: rgba(17, 17, 17, 0.85);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
-  animation: fadeIn 0.3s ease-in;
+  animation: nbFadeIn 0.2s ease-in;
 }
 
-@keyframes fadeIn {
+@keyframes nbFadeIn {
   from {
     opacity: 0;
   }
@@ -23,176 +25,263 @@
 
 .popup-content {
   background: white;
-  border-radius: 20px;
-  padding: 30px;
-  max-width: 450px;
+  border-radius: var(--nb-radius-lg);
+  padding: 40px 32px;
+  max-width: 480px;
   width: 90%;
   position: relative;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-  animation: slideUp 0.3s ease-out;
+  box-shadow: var(--nb-shadow-xl);
+  border: var(--nb-border-thick);
+  animation: nbPopIn 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
-@keyframes slideUp {
+@keyframes nbPopIn {
   from {
-    transform: translateY(50px);
+    transform: scale(0.8) translateY(20px);
     opacity: 0;
   }
   to {
-    transform: translateY(0);
+    transform: scale(1) translateY(0);
     opacity: 1;
   }
 }
 
 .popup-close {
   position: absolute;
-  top: 15px;
-  right: 15px;
-  background: none;
-  border: none;
-  font-size: 30px;
+  top: 16px;
+  right: 16px;
+  background: white;
+  border: var(--nb-border-thin);
+  border-radius: 50%;
+  font-size: 28px;
   cursor: pointer;
-  color: #999;
+  color: var(--nb-black);
   line-height: 1;
   padding: 0;
-  width: 30px;
-  height: 30px;
-  transition: color 0.2s;
+  width: 36px;
+  height: 36px;
+  transition: var(--nb-transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--nb-shadow-sm);
+  font-weight: 700;
 }
 
 .popup-close:hover {
-  color: #333;
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 0 var(--nb-black);
+  background: var(--nb-coral);
+  color: white;
+}
+
+.popup-close:active {
+  transform: translate(1px, 1px);
+  box-shadow: 2px 2px 0 0 var(--nb-black);
 }
 
 .popup-body {
   text-align: center;
-  padding: 20px 0;
+  padding: 20px 0 24px;
 }
 
 .popup-icon {
-  font-size: 60px;
-  margin-bottom: 15px;
-  animation: bounce 0.6s ease-in-out;
+  font-size: 72px;
+  margin-bottom: 20px;
+  animation: nbBounce 0.6s ease-in-out;
 }
 
-@keyframes bounce {
+@keyframes nbBounce {
   0%, 100% {
-    transform: translateY(0);
+    transform: translateY(0) rotate(0deg);
   }
-  50% {
-    transform: translateY(-20px);
+  25% {
+    transform: translateY(-15px) rotate(-5deg);
+  }
+  75% {
+    transform: translateY(-8px) rotate(5deg);
   }
 }
 
 .popup-title {
-  font-size: 28px;
-  font-weight: bold;
-  color: #333;
-  margin: 0 0 10px 0;
+  font-family: var(--font-heading);
+  font-size: clamp(28px, 5vw, 36px);
+  font-weight: 700;
+  color: var(--nb-black);
+  margin: 0 0 12px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
 }
 
 .popup-message {
-  font-size: 16px;
-  color: #666;
-  margin: 0 0 15px 0;
+  font-family: var(--font-body);
+  font-size: 17px;
+  font-weight: 600;
+  color: rgba(17, 17, 17, 0.7);
+  margin: 0 0 20px 0;
 }
 
 .popup-prize {
-  font-size: 48px;
-  font-weight: bold;
-  color: #ff6b35;
-  margin: 20px 0;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+  font-family: var(--font-number);
+  font-size: clamp(44px, 8vw, 64px);
+  font-weight: 700;
+  color: var(--nb-coral);
+  margin: 24px 0;
+  padding: 16px 24px;
+  background: var(--nb-yellow);
+  border: var(--nb-border);
+  border-radius: var(--nb-radius);
+  box-shadow: var(--nb-shadow);
+  display: inline-block;
 }
 
 .popup-expiry {
-  margin: 10px auto 0;
-  padding: 10px 16px;
-  border-radius: 8px;
-  background: #fff5f0;
+  margin: 20px auto 0;
+  padding: 14px 20px;
+  border-radius: var(--nb-radius);
+  background: var(--nb-coral);
   display: inline-flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  border: 1px solid rgba(255, 107, 53, 0.4);
-  color: #8b2c0f;
+  gap: 6px;
+  border: var(--nb-border-thin);
+  box-shadow: var(--nb-shadow-sm);
+  color: white;
   font-size: 14px;
+  font-family: var(--font-body);
   font-weight: 600;
 }
 
 .popup-expiry strong {
-  font-size: 16px;
-  letter-spacing: 0.4px;
-  color: #ff6b35;
+  font-size: 18px;
+  font-family: var(--font-number);
+  font-weight: 700;
+  color: white;
 }
 
 .popup-code {
-  background: #f8f9fa;
-  border-radius: 10px;
-  padding: 20px;
-  margin: 20px 0;
+  background: var(--nb-lime);
+  border-radius: var(--nb-radius);
+  border: var(--nb-border);
+  box-shadow: var(--nb-shadow-sm);
+  padding: 24px;
+  margin: 24px 0;
 }
 
 .code-label {
-  font-size: 14px;
-  color: #666;
-  margin: 0 0 10px 0;
+  font-size: 15px;
+  font-family: var(--font-body);
+  font-weight: 600;
+  color: var(--nb-black);
+  margin: 0 0 14px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
 }
 
 .code-value {
-  font-size: 24px;
-  font-weight: bold;
-  color: #333;
-  font-family: 'Courier New', monospace;
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--nb-black);
+  font-family: var(--font-number);
   background: white;
-  padding: 12px 20px;
-  border-radius: 8px;
-  border: 2px dashed #ddd;
-  margin-bottom: 10px;
-  letter-spacing: 2px;
+  padding: 16px 24px;
+  border-radius: var(--nb-radius-sm);
+  border: var(--nb-border);
+  margin-bottom: 14px;
+  letter-spacing: 4px;
+  box-shadow: var(--nb-shadow-sm);
 }
 
 .copy-button {
-  background: #4CAF50;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 6px;
+  background: var(--nb-blue);
+  color: var(--nb-black);
+  border: var(--nb-border);
+  padding: 12px 24px;
+  border-radius: var(--nb-radius);
   cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
-  transition: background 0.2s;
+  font-size: 16px;
+  font-family: var(--font-button);
+  font-weight: 800;
+  transition: var(--nb-transition);
+  box-shadow: var(--nb-shadow-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  width: 100%;
 }
 
 .copy-button:hover {
-  background: #45a049;
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 0 var(--nb-black);
+}
+
+.copy-button:active {
+  transform: translate(1px, 1px);
+  box-shadow: 2px 2px 0 0 var(--nb-black);
 }
 
 .popup-note {
   font-size: 14px;
-  color: #666;
-  margin: 15px 0 0 0;
-  line-height: 1.5;
+  font-family: var(--font-body);
+  font-weight: 500;
+  color: rgba(17, 17, 17, 0.7);
+  margin: 20px 0 0 0;
+  line-height: 1.6;
 }
 
 .popup-button {
   width: 100%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--nb-coral);
   color: white;
-  border: none;
-  padding: 15px 30px;
-  border-radius: 10px;
-  font-size: 16px;
-  font-weight: bold;
+  border: var(--nb-border);
+  padding: 16px 32px;
+  border-radius: var(--nb-radius);
+  font-size: 18px;
+  font-family: var(--font-button);
+  font-weight: 800;
   cursor: pointer;
-  margin-top: 20px;
-  transition: transform 0.2s, box-shadow 0.2s;
+  margin-top: 24px;
+  transition: var(--nb-transition);
+  box-shadow: var(--nb-shadow);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
 }
 
 .popup-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+  transform: translate(-2px, -2px);
+  box-shadow: var(--nb-shadow-lg);
 }
 
 .popup-button:active {
-  transform: translateY(0);
+  transform: translate(2px, 2px);
+  box-shadow: var(--nb-shadow-sm);
+}
+
+@media (max-width: 480px) {
+  .popup-content {
+    padding: 32px 24px;
+  }
+
+  .popup-icon {
+    font-size: 60px;
+  }
+
+  .popup-title {
+    font-size: clamp(24px, 6vw, 32px);
+  }
+
+  .popup-prize {
+    font-size: clamp(36px, 10vw, 52px);
+    padding: 12px 20px;
+  }
+
+  .code-value {
+    font-size: 24px;
+    padding: 14px 20px;
+    letter-spacing: 3px;
+  }
+
+  .popup-button {
+    padding: 14px 28px;
+    font-size: 16px;
+  }
 }

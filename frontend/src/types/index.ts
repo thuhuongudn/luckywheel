@@ -5,6 +5,7 @@ export interface PrizeFont {
   fontColor?: string;
   fontWeight?: string;
   lineHeight?: string;
+  fontFamily?: string;
 }
 
 export interface Prize {
