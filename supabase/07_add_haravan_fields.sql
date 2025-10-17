@@ -82,8 +82,6 @@ CREATE INDEX IF NOT EXISTS idx_spins_discount_id
   ON lucky_wheel_spins(discount_id)
   WHERE discount_id IS NOT NULL;
 
-RAISE NOTICE '✅ Created index on discount_id';
-
 -- ============================================================================
 -- STEP 4: Update status constraint (remove 'inactive')
 -- ============================================================================
@@ -107,11 +105,17 @@ END $$;
 -- ============================================================================
 -- STEP 5: Update existing 'inactive' records to 'expired'
 -- ============================================================================
-UPDATE lucky_wheel_spins
-SET status = 'expired'
-WHERE status = 'inactive';
+DO $$
+DECLARE
+  updated_count INTEGER;
+BEGIN
+  UPDATE lucky_wheel_spins
+  SET status = 'expired'
+  WHERE status = 'inactive';
 
-RAISE NOTICE '✅ Converted inactive records to expired';
+  GET DIAGNOSTICS updated_count = ROW_COUNT;
+  RAISE NOTICE '✅ Converted % inactive records to expired', updated_count;
+END $$;
 
 -- ============================================================================
 -- STEP 6: Create function to calculate status based on Haravan rules
@@ -144,8 +148,6 @@ END;
 $$ LANGUAGE plpgsql IMMUTABLE;
 
 GRANT EXECUTE ON FUNCTION calculate_haravan_status(BOOLEAN, INTEGER, INTEGER) TO service_role;
-
-RAISE NOTICE '✅ Created calculate_haravan_status function';
 
 -- ============================================================================
 -- STEP 7: Update get_spin_statistics to work with new status logic
