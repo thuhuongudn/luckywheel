@@ -24,6 +24,12 @@ type WeightedPrize = {
   formattedLabel: string;
 };
 
+interface PrizeDataFromAPI {
+  prize_value: number;
+  weight: number;
+  prize_label: string | null;
+}
+
 const generateCouponCode = (length = COUPON_LENGTH): string => {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   let result = '';
@@ -293,7 +299,7 @@ const LuckyWheel: React.FC = () => {
 
         if (data.success && Array.isArray(data.data) && data.data.length > 0) {
           const normalized: WeightedPrize[] = data.data
-            .map((p: any) => ({
+            .map((p: PrizeDataFromAPI) => ({
               value: Number(p.prize_value),
               weight: Math.max(1, Number(p.weight) || 1),
               formattedLabel: formatPrizeLabel(p.prize_label, Number(p.prize_value)),
@@ -529,7 +535,7 @@ const LuckyWheel: React.FC = () => {
           <input
             type="tel"
             className={`text-input ${phoneError ? 'error' : ''}`}
-            placeholder="Nhập số điện thoại (VD: 0912345678)"
+            placeholder="Nhập sdt có Zalo để nhận mã (VD: 0912345678)"
             value={phone}
             onChange={handlePhoneChange}
             disabled={isSpinning || hasSpun}
