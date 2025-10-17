@@ -1,41 +1,54 @@
+/* AdminStats - Neubrutalism Design */
+
 .admin-stats {
   background: white;
-  border-radius: 12px;
-  padding: 24px;
-  margin-bottom: 24px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border-radius: var(--nb-radius-md);
+  padding: 28px;
+  margin-bottom: 32px;
+  box-shadow: var(--nb-shadow);
+  border: var(--nb-border);
+  transition: var(--nb-transition);
+}
+
+.admin-stats:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: var(--nb-shadow-lg);
 }
 
 .admin-stats h2 {
-  margin: 0 0 24px 0;
-  color: #1a1a1a;
-  font-size: 20px;
-  font-weight: 600;
+  margin: 0 0 28px 0;
+  color: var(--nb-black);
+  font-family: var(--font-heading);
+  font-size: clamp(20px, 4vw, 28px);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
 }
 
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 16px;
+  gap: 20px;
 }
 
 .stat-card {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 20px;
-  border-radius: 10px;
-  border: 1px solid #e1e8ed;
-  transition: all 0.2s;
+  gap: 18px;
+  padding: 24px;
+  border-radius: var(--nb-radius);
+  border: var(--nb-border);
+  transition: var(--nb-transition);
+  box-shadow: var(--nb-shadow-sm);
 }
 
 .stat-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transform: translate(-2px, -2px);
+  box-shadow: var(--nb-shadow);
 }
 
 .stat-icon {
-  font-size: 32px;
+  font-size: 36px;
   flex-shrink: 0;
 }
 
@@ -45,44 +58,44 @@
 
 .stat-label {
   display: block;
-  font-size: 13px;
-  color: #666;
-  margin-bottom: 4px;
+  font-size: 14px;
+  font-family: var(--font-body);
+  font-weight: 600;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
 }
 
 .stat-value {
   display: block;
-  font-size: 24px;
+  font-size: 28px;
+  font-family: var(--font-number);
   font-weight: 700;
-  color: #1a1a1a;
 }
 
 .stat-card.total {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border: none;
+  background: var(--nb-blue);
+  color: var(--nb-black);
 }
 
 .stat-card.total .stat-label,
 .stat-card.total .stat-value {
-  color: white;
+  color: var(--nb-black);
 }
 
 .stat-card.active {
-  background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);
-  color: white;
-  border: none;
+  background: var(--nb-lime);
+  color: var(--nb-black);
 }
 
 .stat-card.active .stat-label,
 .stat-card.active .stat-value {
-  color: white;
+  color: var(--nb-black);
 }
 
 .stat-card.used {
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  background: var(--nb-coral);
   color: white;
-  border: none;
 }
 
 .stat-card.used .stat-label,
@@ -91,14 +104,13 @@
 }
 
 .stat-card.expired {
-  background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
-  color: #8b4513;
-  border: none;
+  background: var(--nb-yellow);
+  color: var(--nb-black);
 }
 
 .stat-card.expired .stat-label,
 .stat-card.expired .stat-value {
-  color: #8b4513;
+  color: var(--nb-black);
 }
 
 .stat-card.value {
@@ -106,23 +118,40 @@
 }
 
 .stat-card.active-value {
-  border-left: 4px solid #56ab2f;
+  border-left: 6px solid var(--nb-lime);
 }
 
 .stat-card.used-value {
-  border-left: 4px solid #f5576c;
+  border-left: 6px solid var(--nb-coral);
 }
 
 .stat-card.potential-value {
-  border-left: 4px solid #667eea;
+  border-left: 6px solid var(--nb-blue);
 }
 
 .stat-card.total-value {
-  border-left: 4px solid #764ba2;
+  border-left: 6px solid var(--nb-yellow);
 }
 
 @media (max-width: 768px) {
+  .admin-stats {
+    padding: 20px;
+  }
+
   .stats-grid {
     grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .stat-card {
+    padding: 20px;
+  }
+
+  .stat-icon {
+    font-size: 32px;
+  }
+
+  .stat-value {
+    font-size: 24px;
   }
 }

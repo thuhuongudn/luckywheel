@@ -1,89 +1,148 @@
+/* Login - Neubrutalism Design */
+
 .login-container {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #007AFF 0%, #0051D5 100%);
-  padding: 20px;
+  background: var(--nb-coral);
+  padding: 24px;
 }
 
 .login-box {
   background: white;
-  padding: 40px;
-  border-radius: 12px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  padding: 48px 40px;
+  border-radius: var(--nb-radius-lg);
+  box-shadow: var(--nb-shadow-xl);
+  border: var(--nb-border-thick);
   width: 100%;
-  max-width: 420px;
+  max-width: 460px;
+  transition: var(--nb-transition);
+}
+
+.login-box:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 12px 12px 0 0 var(--nb-black);
 }
 
 .login-box h1 {
-  margin: 0 0 8px 0;
-  color: #007AFF;
-  font-size: 28px;
+  margin: 0 0 12px 0;
+  color: var(--nb-black);
+  font-family: var(--font-heading);
+  font-size: clamp(28px, 5vw, 36px);
   text-align: center;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
 }
 
 .login-subtitle {
-  margin: 0 0 32px 0;
-  color: #666;
-  font-size: 14px;
+  margin: 0 0 36px 0;
+  color: rgba(17, 17, 17, 0.6);
+  font-size: 15px;
+  font-family: var(--font-body);
+  font-weight: 600;
   text-align: center;
 }
 
 .form-group {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 .form-group label {
   display: block;
-  margin-bottom: 8px;
-  color: #333;
-  font-size: 14px;
-  font-weight: 500;
+  margin-bottom: 10px;
+  color: var(--nb-black);
+  font-size: 15px;
+  font-family: var(--font-button);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
 }
 
 .form-group input {
   width: 100%;
-  padding: 12px 16px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  font-size: 15px;
-  transition: border-color 0.3s;
+  padding: 14px 18px;
+  border: var(--nb-border);
+  border-radius: var(--nb-radius);
+  font-size: 16px;
+  font-family: var(--font-body);
+  font-weight: 500;
+  transition: var(--nb-transition);
   box-sizing: border-box;
+  background: white;
+  color: var(--nb-black);
 }
 
 .form-group input:focus {
   outline: none;
-  border-color: #007AFF;
+  border-color: var(--nb-blue);
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 0 var(--nb-black);
+}
+
+.form-group input::placeholder {
+  color: rgba(17, 17, 17, 0.4);
 }
 
 .error-message {
-  background: #FFE5E5;
-  color: #D32F2F;
-  padding: 12px 16px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  font-size: 14px;
+  background: var(--nb-coral);
+  color: white;
+  padding: 14px 20px;
+  border-radius: var(--nb-radius);
+  border: var(--nb-border-thin);
+  box-shadow: var(--nb-shadow-sm);
+  margin-bottom: 24px;
+  font-size: 15px;
+  font-family: var(--font-button);
+  font-weight: 700;
   text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
 }
 
 .login-button {
   width: 100%;
-  padding: 14px;
-  background: #007AFF;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: 600;
+  padding: 16px;
+  background: var(--nb-lime);
+  color: var(--nb-black);
+  border: var(--nb-border);
+  border-radius: var(--nb-radius);
+  font-size: 18px;
+  font-family: var(--font-button);
+  font-weight: 800;
   cursor: pointer;
-  transition: background 0.3s;
+  transition: var(--nb-transition);
+  box-shadow: var(--nb-shadow);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
 }
 
 .login-button:hover {
-  background: #0051D5;
+  transform: translate(-2px, -2px);
+  box-shadow: var(--nb-shadow-lg);
 }
 
 .login-button:active {
-  transform: scale(0.98);
+  transform: translate(2px, 2px);
+  box-shadow: var(--nb-shadow-sm);
+}
+
+@media (max-width: 768px) {
+  .login-container {
+    padding: 20px;
+  }
+
+  .login-box {
+    padding: 36px 28px;
+  }
+
+  .login-box h1 {
+    font-size: clamp(24px, 6vw, 32px);
+  }
+
+  .login-button {
+    padding: 14px;
+    font-size: 16px;
+  }
 }

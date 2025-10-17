@@ -3,6 +3,15 @@
  * Based on neubrutalism-luckywheel-styleguide.md
  */
 
+/* Custom Font: FZ Poppins ExtraBold */
+@font-face {
+  font-family: 'FZ Poppins';
+  src: url('../assets/fonts/FzPoppins/FZ Poppins-ExtraBold.ttf') format('truetype');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   /* Colors */
   --nb-black: #111111;
@@ -15,7 +24,7 @@
   /* Typography */
   --font-heading: 'Space Grotesk', sans-serif;
   --font-body: 'Inter', sans-serif;
-  --font-button: 'Poppins', sans-serif;
+  --font-button: 'FZ Poppins', 'Poppins', sans-serif;
   --font-number: 'DM Sans', sans-serif;
 
   /* Borders */
