@@ -70,7 +70,7 @@ const AdminStats: React.FC<AdminStatsProps> = ({ stats }) => {
         <div className="stat-card value potential-value">
           <div className="stat-icon">🎯</div>
           <div className="stat-content">
-            <div className="stat-label">Tiềm năng (Active + Used)</div>
+            <div className="stat-label">Tổng mã giảm giá tiềm năng (Active + Used)</div>
             <div className="stat-value">{formatCurrency(stats.potential_value)}</div>
           </div>
         </div>
