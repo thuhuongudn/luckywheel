@@ -87,5 +87,55 @@ export const adminApi = {
       console.error('Error updating spin status:', error);
       throw error;
     }
+  },
+
+  // Haravan Integration APIs
+
+  // Create Haravan discount code
+  async createHaravanDiscount(spinId: string): Promise<any> {
+    try {
+      const response = await axios.post(`${API_BASE_URL}/api/admin/haravan/create-discount`, {
+        spinId
+      });
+
+      if (!response.data.success) {
+        throw new Error(response.data.message || 'Failed to create discount');
+      }
+
+      return response.data;
+    } catch (error: any) {
+      console.error('Error creating Haravan discount:', error);
+      throw new Error(error.response?.data?.message || error.message);
+    }
+  },
+
+  // Refresh status for all active spins
+  async refreshHaravanStatus(): Promise<any> {
+    try {
+      const response = await axios.post(`${API_BASE_URL}/api/admin/haravan/refresh-status`);
+
+      if (!response.data.success) {
+        throw new Error(response.data.message || 'Failed to refresh status');
+      }
+
+      return response.data;
+    } catch (error: any) {
+      console.error('Error refreshing Haravan status:', error);
+      throw new Error(error.response?.data?.message || error.message);
+    }
+  },
+
+  // Delete Haravan discount
+  async deleteHaravanDiscount(spinId: string): Promise<void> {
+    try {
+      const response = await axios.delete(`${API_BASE_URL}/api/admin/haravan/discount/${spinId}`);
+
+      if (!response.data.success) {
+        throw new Error(response.data.message || 'Failed to delete discount');
+      }
+    } catch (error: any) {
+      console.error('Error deleting Haravan discount:', error);
+      throw new Error(error.response?.data?.message || error.message);
+    }
   }
 };

@@ -9,6 +9,7 @@ require('dotenv').config();
 // Import Supabase client and DB functions
 const { supabase, testConnection } = require('./lib/supabase');
 const db = require('./lib/db');
+const haravan = require('./lib/haravan');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -563,6 +564,265 @@ app.put('/api/admin/spins/:id/status', async (req, res) => {
       success: false,
       message: 'Error updating spin',
       error: error.message
+    });
+  }
+});
+
+// =============================================================================
+// HARAVAN DISCOUNT CODE API ENDPOINTS
+// =============================================================================
+
+// Create Haravan discount code for a spin
+app.post('/api/admin/haravan/create-discount', async (req, res) => {
+  try {
+    const { spinId } = req.body;
+
+    if (!spinId) {
+      return res.status(400).json({
+        success: false,
+        message: 'spinId is required'
+      });
+    }
+
+    console.log('📝 [HARAVAN] Creating discount for spin:', spinId);
+
+    // Get spin record
+    const { data: spin, error: fetchError } = await supabase
+      .from('lucky_wheel_spins')
+      .select('*')
+      .eq('id', spinId)
+      .single();
+
+    if (fetchError || !spin) {
+      return res.status(404).json({
+        success: false,
+        message: 'Spin not found'
+      });
+    }
+
+    // Check if discount already created
+    if (spin.discount_id) {
+      return res.status(400).json({
+        success: false,
+        message: 'Discount already created for this spin',
+        discountId: spin.discount_id
+      });
+    }
+
+    // Create discount in Haravan
+    const discount = await haravan.createDiscount({
+      code: spin.coupon_code,
+      value: spin.prize,
+      starts_at: spin.created_at,
+      ends_at: spin.expires_at,
+      campaignId: spin.campaign_id
+    });
+
+    // Calculate status based on Haravan response
+    const status = haravan.calculateStatus(
+      discount.is_promotion,
+      discount.times_used,
+      discount.usage_limit
+    );
+
+    // Update spin record with Haravan data
+    const { data: updated, error: updateError } = await supabase
+      .from('lucky_wheel_spins')
+      .update({
+        discount_id: discount.discountId,
+        is_promotion: discount.is_promotion,
+        times_used: discount.times_used,
+        usage_limit: discount.usage_limit,
+        status: status
+      })
+      .eq('id', spinId)
+      .select()
+      .single();
+
+    if (updateError) {
+      console.error('❌ [HARAVAN] Database update error:', updateError);
+      return res.status(500).json({
+        success: false,
+        message: 'Discount created but failed to update database',
+        error: updateError.message
+      });
+    }
+
+    console.log('✅ [HARAVAN] Discount created and saved:', discount.discountId);
+
+    res.json({
+      success: true,
+      data: updated,
+      discount
+    });
+
+  } catch (error) {
+    console.error('❌ [HARAVAN] Create discount error:', error.message);
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+});
+
+// Refresh status for active spins (batch refresh)
+app.post('/api/admin/haravan/refresh-status', async (req, res) => {
+  try {
+    console.log('🔄 [HARAVAN] Refreshing status for active spins');
+
+    // Get all active spins with discount_id
+    const { data: spins, error: fetchError } = await supabase
+      .from('lucky_wheel_spins')
+      .select('*')
+      .eq('status', 'active')
+      .not('discount_id', 'is', null);
+
+    if (fetchError) {
+      throw new Error(fetchError.message);
+    }
+
+    if (!spins || spins.length === 0) {
+      return res.json({
+        success: true,
+        message: 'No active spins to refresh',
+        updated: 0
+      });
+    }
+
+    console.log(`📊 [HARAVAN] Found ${spins.length} active spins to refresh`);
+
+    // Refresh each spin
+    const results = [];
+    const errors = [];
+
+    for (const spin of spins) {
+      try {
+        // Get latest data from Haravan
+        const discount = await haravan.getDiscount(spin.discount_id);
+
+        // Calculate new status
+        const newStatus = haravan.calculateStatus(
+          discount.is_promotion,
+          discount.times_used,
+          discount.usage_limit
+        );
+
+        // Update if status changed
+        if (newStatus !== spin.status || discount.times_used !== spin.times_used) {
+          const { error: updateError } = await supabase
+            .from('lucky_wheel_spins')
+            .update({
+              is_promotion: discount.is_promotion,
+              times_used: discount.times_used,
+              usage_limit: discount.usage_limit,
+              status: newStatus
+            })
+            .eq('id', spin.id);
+
+          if (updateError) {
+            errors.push({ spinId: spin.id, error: updateError.message });
+          } else {
+            results.push({
+              spinId: spin.id,
+              code: spin.coupon_code,
+              oldStatus: spin.status,
+              newStatus: newStatus,
+              times_used: discount.times_used
+            });
+          }
+        }
+
+        // Rate limiting: wait 100ms between requests
+        await new Promise(resolve => setTimeout(resolve, 100));
+
+      } catch (error) {
+        console.error(`❌ [HARAVAN] Error refreshing spin ${spin.id}:`, error.message);
+        errors.push({ spinId: spin.id, error: error.message });
+      }
+    }
+
+    console.log(`✅ [HARAVAN] Refreshed ${results.length} spins`);
+
+    res.json({
+      success: true,
+      updated: results.length,
+      results,
+      errors: errors.length > 0 ? errors : undefined
+    });
+
+  } catch (error) {
+    console.error('❌ [HARAVAN] Refresh status error:', error.message);
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+});
+
+// Delete Haravan discount
+app.delete('/api/admin/haravan/discount/:spinId', async (req, res) => {
+  try {
+    const { spinId } = req.params;
+
+    console.log('🗑️  [HARAVAN] Deleting discount for spin:', spinId);
+
+    // Get spin record
+    const { data: spin, error: fetchError } = await supabase
+      .from('lucky_wheel_spins')
+      .select('*')
+      .eq('id', spinId)
+      .single();
+
+    if (fetchError || !spin) {
+      return res.status(404).json({
+        success: false,
+        message: 'Spin not found'
+      });
+    }
+
+    if (!spin.discount_id) {
+      return res.status(400).json({
+        success: false,
+        message: 'No discount to delete'
+      });
+    }
+
+    // Delete from Haravan
+    await haravan.deleteDiscount(spin.discount_id);
+
+    // Update spin record (clear Haravan fields, set status to expired)
+    const { error: updateError } = await supabase
+      .from('lucky_wheel_spins')
+      .update({
+        discount_id: null,
+        is_promotion: false,
+        times_used: 0,
+        usage_limit: 1,
+        status: 'expired'
+      })
+      .eq('id', spinId);
+
+    if (updateError) {
+      console.error('❌ [HARAVAN] Database update error:', updateError);
+      return res.status(500).json({
+        success: false,
+        message: 'Discount deleted but failed to update database',
+        error: updateError.message
+      });
+    }
+
+    console.log('✅ [HARAVAN] Discount deleted');
+
+    res.json({
+      success: true,
+      message: 'Discount deleted successfully'
+    });
+
+  } catch (error) {
+    console.error('❌ [HARAVAN] Delete discount error:', error.message);
+    res.status(500).json({
+      success: false,
+      message: error.message
     });
   }
 });

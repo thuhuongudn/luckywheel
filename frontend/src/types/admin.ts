@@ -6,10 +6,15 @@ export interface SpinRecord {
   phone_masked?: string;
   prize: number;
   coupon_code: string;
-  status: 'active' | 'inactive' | 'expired' | 'used';
+  status: 'active' | 'expired' | 'used';  // Removed 'inactive'
   created_at: string;
   expires_at: string;
   n8n_sent?: boolean;
+  // Haravan fields
+  discount_id?: number | null;
+  is_promotion?: boolean;
+  times_used?: number;
+  usage_limit?: number;
 }
 
 export interface SpinStatistics {
