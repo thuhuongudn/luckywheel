@@ -5,12 +5,14 @@ import '../styles/AdminTable.css';
 interface AdminTableProps {
   spins: SpinRecord[];
   onDeleteDiscount?: (spinId: string, couponCode: string) => Promise<void>;
+  onActivateDiscount?: (spinId: string, couponCode: string) => Promise<void>;
 }
 
-const AdminTable: React.FC<AdminTableProps> = ({ spins, onDeleteDiscount }) => {
+const AdminTable: React.FC<AdminTableProps> = ({ spins, onDeleteDiscount, onActivateDiscount }) => {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [activatingId, setActivatingId] = useState<string | null>(null);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -45,7 +47,7 @@ const AdminTable: React.FC<AdminTableProps> = ({ spins, onDeleteDiscount }) => {
     if (!onDeleteDiscount) return;
 
     const confirmed = window.confirm(
-      `Bạn có chắc muốn xóa mã giảm giá "${couponCode}" khỏi Haravan?\n\nLưu ý: Hành động này không thể hoàn tác!`
+      `Bạn có chắc muốn xóa dòng này?\n\nMã: ${couponCode}\n\nKhách hàng sẽ có thể quay lại sau khi xóa.`
     );
 
     if (!confirmed) return;
@@ -53,11 +55,31 @@ const AdminTable: React.FC<AdminTableProps> = ({ spins, onDeleteDiscount }) => {
     try {
       setDeletingId(spinId);
       await onDeleteDiscount(spinId, couponCode);
-      alert(`Đã xóa mã giảm giá "${couponCode}" thành công!`);
+      alert(`Đã xóa thành công! Khách hàng có thể quay lại.`);
     } catch (error: any) {
       alert(`Lỗi khi xóa: ${error.message}`);
     } finally {
       setDeletingId(null);
+    }
+  };
+
+  const handleActivate = async (spinId: string, couponCode: string) => {
+    if (!onActivateDiscount) return;
+
+    const confirmed = window.confirm(
+      `Kích hoạt mã giảm giá "${couponCode}" trên Haravan?`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      setActivatingId(spinId);
+      await onActivateDiscount(spinId, couponCode);
+      alert(`Đã kích hoạt mã giảm giá "${couponCode}" thành công!`);
+    } catch (error: any) {
+      alert(`Lỗi khi kích hoạt: ${error.message}`);
+    } finally {
+      setActivatingId(null);
     }
   };
 
@@ -136,18 +158,31 @@ const AdminTable: React.FC<AdminTableProps> = ({ spins, onDeleteDiscount }) => {
                   <td>{formatDate(spin.created_at)}</td>
                   <td>{formatDate(spin.expires_at)}</td>
                   <td className="action-cell">
-                    {spin.discount_id && onDeleteDiscount ? (
-                      <button
-                        onClick={() => handleDelete(spin.id, spin.coupon_code)}
-                        disabled={deletingId === spin.id}
-                        className="btn-delete"
-                        title="Xóa mã giảm giá khỏi Haravan"
-                      >
-                        {deletingId === spin.id ? '⏳' : '🗑️'}
-                      </button>
-                    ) : (
-                      <span className="no-action">—</span>
-                    )}
+                    <div className="action-buttons">
+                      {/* Activate button - show only if no discount_id */}
+                      {!spin.discount_id && onActivateDiscount && (
+                        <button
+                          onClick={() => handleActivate(spin.id, spin.coupon_code)}
+                          disabled={activatingId === spin.id}
+                          className="btn-activate"
+                          title="Kích hoạt mã giảm giá trên Haravan"
+                        >
+                          {activatingId === spin.id ? '⏳' : '✅'}
+                        </button>
+                      )}
+
+                      {/* Delete button - show for all rows */}
+                      {onDeleteDiscount && (
+                        <button
+                          onClick={() => handleDelete(spin.id, spin.coupon_code)}
+                          disabled={deletingId === spin.id}
+                          className="btn-delete"
+                          title="Xóa dòng này (khách có thể quay lại)"
+                        >
+                          {deletingId === spin.id ? '⏳' : '🗑️'}
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))

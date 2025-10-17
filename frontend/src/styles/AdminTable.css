@@ -162,10 +162,46 @@
   }
 }
 
-/* Action cell and delete button */
+/* Action cell and buttons */
 .action-cell {
   text-align: center;
-  width: 80px;
+  width: 120px;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-activate {
+  background: #28a745;
+  border: none;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+}
+
+.btn-activate:hover:not(:disabled) {
+  background: #218838;
+  transform: scale(1.05);
+}
+
+.btn-activate:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.btn-activate:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .btn-delete {

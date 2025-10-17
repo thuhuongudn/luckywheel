@@ -82,6 +82,18 @@ const Admin: React.FC = () => {
     }
   };
 
+  const handleActivateDiscount = async (spinId: string, _couponCode: string) => {
+    try {
+      await adminApi.createHaravanDiscount(spinId);
+
+      // Refresh data to show updated state
+      const spinsData = await adminApi.getSpins();
+      setSpins(spinsData);
+    } catch (err: any) {
+      throw new Error(err.message || 'Không thể kích hoạt mã giảm giá');
+    }
+  };
+
   const handleLogout = () => {
     logout();
     navigate('/login');
@@ -132,7 +144,11 @@ const Admin: React.FC = () => {
           <PrizeDistributionComponent distributions={distributions} />
         )}
 
-        <AdminTable spins={spins} onDeleteDiscount={handleDeleteDiscount} />
+        <AdminTable
+          spins={spins}
+          onDeleteDiscount={handleDeleteDiscount}
+          onActivateDiscount={handleActivateDiscount}
+        />
       </div>
     </div>
   );
