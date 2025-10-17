@@ -1,83 +1,108 @@
-/* Toast Notification - Christmas Theme */
+/* Toast Notification - Neubrutalism Design */
 .toast {
   position: fixed;
-  top: 20px;
-  right: 20px;
-  min-width: 300px;
-  max-width: 500px;
-  padding: 18px 22px;
-  border-radius: 15px;
+  top: 24px;
+  right: 24px;
+  min-width: 320px;
+  max-width: 520px;
+  padding: 20px 24px;
+  border-radius: var(--nb-radius);
   display: flex;
   align-items: center;
-  gap: 12px;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  gap: 14px;
+  font-family: var(--font-body);
   font-size: 16px;
   font-weight: 600;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25),
-              0 0 0 3px rgba(255, 215, 0, 0.4);
+  border: var(--nb-border);
+  box-shadow: var(--nb-shadow-lg);
   z-index: 9999;
-  animation: slideInRight 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55),
-             pulse 2s ease-in-out infinite 0.5s;
+  animation: nbSlideInRight 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
   cursor: pointer;
-  transition: transform 0.2s;
+  transition: var(--nb-transition);
 }
 
 .toast:hover {
-  transform: translateY(-2px) scale(1.02);
+  transform: translate(-2px, -2px);
+  box-shadow: 10px 10px 0 0 var(--nb-black);
 }
 
 .toast-error {
-  background: linear-gradient(135deg, #DC143C 0%, #C41E3A 100%);
-  color: #FFFFFF;
-  border: 3px solid #FFD700;
+  background: var(--nb-yellow);
+  color: var(--nb-black);
+  border-color: var(--nb-black);
 }
 
 .toast-success {
-  background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
-  color: #FFFFFF;
-  border: 3px solid #FFD700;
+  background: var(--nb-lime);
+  color: var(--nb-black);
+  border-color: var(--nb-black);
 }
 
 .toast-info {
-  background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
-  color: #FFFFFF;
-  border: 3px solid #FFD700;
+  background: var(--nb-blue);
+  color: var(--nb-black);
+  border-color: var(--nb-black);
 }
 
 .toast-icon {
-  font-size: 26px;
+  font-size: 28px;
   flex-shrink: 0;
-  animation: bounce 1s infinite;
+  animation: nbBounceIcon 0.6s ease-in-out;
+}
+
+@keyframes nbBounceIcon {
+  0%, 100% {
+    transform: rotate(0deg) scale(1);
+  }
+  25% {
+    transform: rotate(-10deg) scale(1.2);
+  }
+  75% {
+    transform: rotate(10deg) scale(1.2);
+  }
 }
 
 .toast-message {
   flex: 1;
   line-height: 1.5;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+  letter-spacing: 0.01em;
 }
 
 .toast-close {
-  background: transparent;
-  border: none;
-  color: #FFFFFF;
-  font-size: 20px;
-  font-weight: bold;
-  cursor: pointer;
-  padding: 5px 8px;
+  background: white;
+  border: var(--nb-border-thin);
   border-radius: 50%;
-  transition: all 0.2s;
+  color: var(--nb-black);
+  font-size: 18px;
+  font-weight: 800;
+  cursor: pointer;
+  padding: 0;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--nb-transition);
   flex-shrink: 0;
+  box-shadow: var(--nb-shadow-sm);
 }
 
 .toast-close:hover {
-  background: rgba(255, 255, 255, 0.2);
-  transform: rotate(90deg);
+  transform: rotate(90deg) translate(-1px, -1px);
+  box-shadow: 3px 3px 0 0 var(--nb-black);
+  background: var(--nb-coral);
+  color: white;
 }
 
-@keyframes slideInRight {
+.toast-close:active {
+  transform: rotate(90deg) translate(1px, 1px);
+  box-shadow: 1px 1px 0 0 var(--nb-black);
+}
+
+@keyframes nbSlideInRight {
   from {
     opacity: 0;
-    transform: translateX(100px);
+    transform: translateX(120px);
   }
   to {
     opacity: 1;
@@ -85,44 +110,25 @@
   }
 }
 
-@keyframes pulse {
-  0%, 100% {
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25),
-                0 0 0 3px rgba(255, 215, 0, 0.4);
-  }
-  50% {
-    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.3),
-                0 0 0 5px rgba(255, 215, 0, 0.6),
-                0 0 20px rgba(255, 215, 0, 0.3);
-  }
-}
-
-@keyframes bounce {
-  0%, 100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.2);
-  }
-}
-
 /* Mobile responsive */
 @media (max-width: 768px) {
   .toast {
-    top: 10px;
-    right: 10px;
-    left: 10px;
+    top: 16px;
+    right: 16px;
+    left: 16px;
     min-width: auto;
     max-width: none;
-    font-size: 14px;
-    padding: 15px 18px;
+    font-size: 15px;
+    padding: 18px 20px;
   }
 
   .toast-icon {
-    font-size: 22px;
+    font-size: 24px;
   }
 
   .toast-close {
-    font-size: 18px;
+    font-size: 16px;
+    width: 26px;
+    height: 26px;
   }
 }

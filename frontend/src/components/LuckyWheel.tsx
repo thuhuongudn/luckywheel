@@ -71,20 +71,20 @@ const createRadialFonts = (label: string, fontColor: string): PrizeFont[] => {
   return [
     {
       text: 'Giảm',
-      top: '14%',
-      fontSize: '16px',
+      top: '18%',
+      fontSize: '14px',
       fontColor,
       fontWeight: '800',
-      lineHeight: '20px',
+      lineHeight: '16px',
       fontFamily: 'Space Grotesk, sans-serif',
     },
     {
       text: amountText,
-      top: '42%',
-      fontSize: '22px',
+      top: '45%',
+      fontSize: '17px',
       fontColor,
       fontWeight: '800',
-      lineHeight: '26px',
+      lineHeight: '19px',
       fontFamily: 'DM Sans, monospace',
     },
   ];
@@ -505,6 +505,7 @@ const LuckyWheel: React.FC = () => {
         <p>🎁 QUAY NGAY – NHẬN MÃ LIỀN TAY</p>
       </div>
 
+      <h3 className="product-badges-title">nhóm sản phẩm áp dụng</h3>
       <div className="product-badges">
         <span className="product-badge">Mason Natural</span>
         <span className="product-badge">Olympian Labs</span>
@@ -570,11 +571,11 @@ const LuckyWheel: React.FC = () => {
         </p>
 
         <div className="rules">
-          <h3>📋 Sản phẩm áp dụng</h3>
+          <h3>📋 Nhóm sản phẩm áp dụng</h3>
           <ul>
-            <li>Mason Natural - Thực phẩm chức năng Mỹ</li>
-            <li>Olympian Labs - Vitamin & Khoáng chất</li>
-            <li>Careline - Chăm sóc sức khỏe</li>
+            <li>Mason Natural - Vitamin và thực phẩm chức năng Mỹ</li>
+            <li>Olympian Labs - No.1 trong nhóm hỗ trợ điều trị của Mỹ</li>
+            <li>Careline - Chăm sóc sức khoẻ và sắc đẹp từ Úc</li>
           </ul>
         </div>
 

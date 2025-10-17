@@ -78,6 +78,18 @@
   letter-spacing: 0.02em;
 }
 
+/* Product badges title */
+.product-badges-title {
+  font-family: var(--font-heading);
+  font-size: clamp(16px, 3vw, 20px);
+  font-weight: 700;
+  color: var(--nb-coral);
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  margin: 0 0 16px 0;
+}
+
 /* Product badges - Using badge component */
 .product-badges {
   display: flex;
