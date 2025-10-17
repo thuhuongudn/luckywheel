@@ -11,7 +11,6 @@ import winningSound from '../assets/audio/winning_notification.MP3';
 
 const COUPON_LENGTH = 6;
 const PHONE_REGEX = /^0\d{9}$/;
-const ENABLE_DEBUG = import.meta.env.DEV || import.meta.env.VITE_DEBUG_LOGS === 'true';
 const CAMPAIGN_ID = import.meta.env.VITE_CAMPAIGN_ID || 'lucky-wheel-2025-10-14';
 
 const MIN_WHEEL_SIZE = 220;
@@ -23,14 +22,6 @@ type WeightedPrize = {
   value: number;
   weight: number;
   formattedLabel: string;
-};
-
-const maskPhone = (value: string) => (value.length <= 4 ? value : `${'*'.repeat(Math.max(0, value.length - 4))}${value.slice(-4)}`);
-
-const debugLog = (...args: unknown[]) => {
-  if (ENABLE_DEBUG) {
-    console.log('[LuckyWheel]', ...args);
-  }
 };
 
 const generateCouponCode = (length = COUPON_LENGTH): string => {
@@ -275,7 +266,7 @@ const LuckyWheel: React.FC = () => {
       if (winningAudioRef.current) {
         winningAudioRef.current.pause();
         winningAudioRef.current.currentTime = 0;
-        winningAudioRef.current.play().catch(err => console.log('Winning audio play failed:', err));
+        winningAudioRef.current.play().catch(() => {});
       }
 
       setIsSpinning(false);
@@ -294,7 +285,7 @@ const LuckyWheel: React.FC = () => {
         const backendUrl = import.meta.env.VITE_BACKEND_URL ||
           (import.meta.env.MODE === 'production' ? '' : 'http://localhost:3000');
         const apiUrl = `${backendUrl}/api/prizes/${CAMPAIGN_ID}`;
-        console.log('[FRONTEND] Fetching prizes from:', apiUrl);
+
         const response = await fetch(apiUrl);
         const data = await response.json();
 
@@ -307,13 +298,12 @@ const LuckyWheel: React.FC = () => {
             }))
             .filter((item: WeightedPrize) => Number.isFinite(item.value) && item.value > 0);
 
-          console.log('[FRONTEND] Prize segments source count:', normalized.length);
           applyPrizes(normalized);
         } else {
           applyPrizes([]);
         }
       } catch (error) {
-        console.error('Failed to fetch prizes:', error);
+
         applyPrizes([]);
       } finally {
         setIsLoadingPrizes(false);
@@ -338,14 +328,12 @@ const LuckyWheel: React.FC = () => {
   const validatePhone = (value: string): boolean => PHONE_REGEX.test(value);
 
   const handleStart = async () => {
-    console.log('🎯 [FRONTEND] handleStart called!');
+
     const trimmedName = customerName.trim();
     const sanitizedPhone = phone.replace(/[^\d]/g, '');
 
-    console.log('[FRONTEND] Input:', { name: trimmedName, phone: sanitizedPhone, isSpinning, hasSpun });
-
     if (isSpinning) {
-      console.log('[FRONTEND] Already spinning, returning');
+
       return;
     }
 
@@ -365,34 +353,32 @@ const LuckyWheel: React.FC = () => {
 
     if (!trimmedName || !validatePhone(sanitizedPhone) || hasSpun) {
       if (hasSpun) {
-        console.log('[FRONTEND] User already spun');
+
         setToastType('error');
         setToastMessage('Bạn đã quay rồi! Vui lòng kiểm tra Zalo để nhận mã giảm giá.');
       }
-      console.log('[FRONTEND] Validation failed, blocking spin:', { hasSpun, nameValid: !!trimmedName, phoneValid: validatePhone(sanitizedPhone) });
+
       return;
     }
 
-    console.log('[FRONTEND] Validation passed, checking eligibility...');
     try {
       const eligibility = await checkEligibility(sanitizedPhone, CAMPAIGN_ID);
-      console.log('[FRONTEND] Eligibility result:', eligibility);
+
       if (!eligibility.eligible) {
         setHasSpun(true);
         setToastType('error');
         setToastMessage(eligibility.message || 'Số điện thoại đã quay rồi! Vui lòng kiểm tra Zalo.');
-        console.log('[FRONTEND] Not eligible, stopping');
+
         return;
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Không thể kiểm tra điều kiện. Vui lòng thử lại sau.';
-      console.error('[FRONTEND] Eligibility check error:', error);
+
       setToastType('error');
       setToastMessage(message);
       return;
     }
 
-    debugLog('Spin initiated', { name: trimmedName, phone: maskPhone(sanitizedPhone) });
     setShowPopup(false);
     setPrizeCode('');
     setCurrentPrize(0);
@@ -409,7 +395,7 @@ const LuckyWheel: React.FC = () => {
 
     if (spinAudioRef.current) {
       spinAudioRef.current.currentTime = 0;
-      spinAudioRef.current.play().catch(err => console.log('Audio play failed:', err));
+      spinAudioRef.current.play().catch(() => {});
     }
 
     if (winningAudioRef.current && !hasPrimedWinningAudioRef.current) {
@@ -438,12 +424,6 @@ const LuckyWheel: React.FC = () => {
     const expiresAtIso = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
 
     try {
-      console.log('📤 [FRONTEND] Sending spin request to backend...', {
-        name: trimmedName,
-        phone: maskPhone(sanitizedPhone),
-        prize: fallbackPrizeValue,
-      });
-
       const response = await sendSpinResult({
         campaign_id: CAMPAIGN_ID,
         phone: sanitizedPhone,
@@ -476,8 +456,6 @@ const LuckyWheel: React.FC = () => {
       }, remaining);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Có lỗi xảy ra. Vui lòng thử lại sau.';
-      console.error('Error sending spin result:', error);
-      debugLog('Spin webhook failed', message);
 
       wheelRef.current?.stop(randomIndex);
       pendingResultRef.current = null;

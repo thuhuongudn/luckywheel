@@ -7,8 +7,6 @@ import ProtectedRoute from './components/ProtectedRoute';
 import './App.css';
 
 function App() {
-  console.log('🎯 App component rendering...');
-
   return (
     <AuthProvider>
       <Router>

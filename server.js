@@ -853,32 +853,26 @@ app.delete('/api/admin/haravan/discount/:spinId', async (req, res) => {
     // Delete from Haravan
     await haravan.deleteDiscount(spin.discount_id);
 
-    // Update spin record (clear Haravan fields, set status to expired)
-    const { error: updateError } = await supabase
+    // Delete entire row from database (allow customer to spin again)
+    const { error: deleteError } = await supabase
       .from('lucky_wheel_spins')
-      .update({
-        discount_id: null,
-        is_promotion: false,
-        times_used: 0,
-        usage_limit: 1,
-        status: 'expired'
-      })
+      .delete()
       .eq('id', spinId);
 
-    if (updateError) {
-      console.error('❌ [HARAVAN] Database update error:', updateError);
+    if (deleteError) {
+      console.error('❌ [HARAVAN] Database delete error:', deleteError);
       return res.status(500).json({
         success: false,
-        message: 'Discount deleted but failed to update database',
-        error: updateError.message
+        message: 'Discount deleted but failed to remove record from database',
+        error: deleteError.message
       });
     }
 
-    console.log('✅ [HARAVAN] Discount deleted');
+    console.log('✅ [HARAVAN] Discount and record deleted (customer can spin again)');
 
     res.json({
       success: true,
-      message: 'Discount deleted successfully'
+      message: 'Discount deleted successfully. Customer can now spin again.'
     });
 
   } catch (error) {
