@@ -128,6 +128,35 @@
   box-shadow: var(--nb-shadow-sm);
 }
 
+.home-button {
+  width: 100%;
+  background: white;
+  color: var(--nb-black);
+  border: var(--nb-border);
+  padding: 14px 32px;
+  border-radius: var(--nb-radius);
+  font-size: 16px;
+  font-family: var(--font-button);
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 12px;
+  transition: var(--nb-transition);
+  box-shadow: var(--nb-shadow-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.home-button:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 0 var(--nb-black);
+  background: var(--nb-yellow);
+}
+
+.home-button:active {
+  transform: translate(1px, 1px);
+  box-shadow: 2px 2px 0 0 var(--nb-black);
+}
+
 @media (max-width: 768px) {
   .login-container {
     padding: 20px;

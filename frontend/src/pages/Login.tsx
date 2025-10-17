@@ -63,6 +63,14 @@ const Login: React.FC = () => {
           <button type="submit" className="login-button">
             Đăng nhập
           </button>
+
+          <button
+            type="button"
+            className="home-button"
+            onClick={() => navigate('/')}
+          >
+            🎡 Đến trang quay số
+          </button>
         </form>
       </div>
     </div>

@@ -127,8 +127,11 @@ const Admin: React.FC = () => {
         <div className="header-content">
           <h1>Lucky Wheel Admin Dashboard</h1>
           <div className="header-actions">
+            <button onClick={() => navigate('/')} className="home-button-admin">
+              🎡 Đến trang quay số
+            </button>
             <button onClick={handleRefresh} className="refresh-button">
-              🔄 Làm mới
+              ⚡ Làm mới
             </button>
             <button onClick={handleLogout} className="logout-button">
               Đăng xuất
