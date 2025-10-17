@@ -1,0 +1,163 @@
+.admin-table-container {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  margin-bottom: 24px;
+}
+
+.table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.table-header h2 {
+  margin: 0;
+  color: #1a1a1a;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.table-filters {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.search-input,
+.status-filter {
+  padding: 10px 16px;
+  border: 1px solid #e1e8ed;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: border-color 0.2s;
+}
+
+.search-input {
+  min-width: 250px;
+}
+
+.search-input:focus,
+.status-filter:focus {
+  outline: none;
+  border-color: #007AFF;
+}
+
+.table-info {
+  margin-bottom: 16px;
+  color: #666;
+  font-size: 14px;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+  border: 1px solid #e1e8ed;
+  border-radius: 8px;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 800px;
+}
+
+.admin-table thead {
+  background: #f5f7fa;
+}
+
+.admin-table th {
+  padding: 14px 16px;
+  text-align: left;
+  font-weight: 600;
+  color: #333;
+  font-size: 13px;
+  border-bottom: 2px solid #e1e8ed;
+  white-space: nowrap;
+}
+
+.admin-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 14px;
+  color: #333;
+}
+
+.admin-table tbody tr:hover {
+  background: #f9fafb;
+}
+
+.admin-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.coupon-code {
+  font-family: 'Courier New', monospace;
+  font-weight: 600;
+  color: #007AFF;
+}
+
+.prize-value {
+  font-weight: 600;
+  color: #f5576c;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.status-active {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.status-inactive {
+  background: #e0e0e0;
+  color: #616161;
+}
+
+.status-expired {
+  background: #fff3e0;
+  color: #e65100;
+}
+
+.status-used {
+  background: #f3e5f5;
+  color: #7b1fa2;
+}
+
+.no-data {
+  text-align: center;
+  color: #999;
+  padding: 40px !important;
+  font-style: italic;
+}
+
+@media (max-width: 768px) {
+  .table-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .table-filters {
+    width: 100%;
+  }
+
+  .search-input,
+  .status-filter {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .search-input {
+    min-width: 0;
+  }
+}

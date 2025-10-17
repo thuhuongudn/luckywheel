@@ -428,6 +428,146 @@ app.get('/api/prizes/:campaignId', async (req, res) => {
 });
 
 // =============================================================================
+// ADMIN API ENDPOINTS (Service Role - Full Access)
+// =============================================================================
+
+// Get all spins for admin dashboard
+app.get('/api/admin/spins', async (req, res) => {
+  try {
+    const campaignId = req.query.campaign_id || process.env.CAMPAIGN_ID || 'lucky-wheel-2025-10-14';
+
+    console.log('📊 [ADMIN] Fetching spins for campaign:', campaignId);
+
+    const { data, error } = await supabase
+      .from('lucky_wheel_spins')
+      .select('*')
+      .eq('campaign_id', campaignId)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('❌ [ADMIN] Supabase error:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Database error',
+        error: error.message
+      });
+    }
+
+    console.log('✅ [ADMIN] Fetched', data.length, 'spins');
+
+    res.json({
+      success: true,
+      data: data || []
+    });
+  } catch (error) {
+    console.error('❌ [ADMIN] Error fetching spins:', error.message);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching spins',
+      error: error.message
+    });
+  }
+});
+
+// Get statistics for admin dashboard
+app.get('/api/admin/statistics', async (req, res) => {
+  try {
+    const campaignId = req.query.campaign_id || process.env.CAMPAIGN_ID || 'lucky-wheel-2025-10-14';
+
+    console.log('📈 [ADMIN] Fetching statistics for campaign:', campaignId);
+
+    const { data, error } = await supabase
+      .rpc('get_spin_statistics', { p_campaign_id: campaignId });
+
+    if (error) {
+      console.error('❌ [ADMIN] Statistics error:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Statistics error',
+        error: error.message
+      });
+    }
+
+    console.log('✅ [ADMIN] Statistics fetched');
+
+    res.json({
+      success: true,
+      data: data?.[0] || {
+        total_spins: 0,
+        active_count: 0,
+        inactive_count: 0,
+        expired_count: 0,
+        used_count: 0,
+        prize_20k_count: 0,
+        prize_30k_count: 0,
+        prize_50k_count: 0,
+        prize_100k_count: 0,
+        total_prize_value: 0,
+        active_value: 0,
+        used_value: 0,
+        potential_value: 0
+      }
+    });
+  } catch (error) {
+    console.error('❌ [ADMIN] Error fetching statistics:', error.message);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching statistics',
+      error: error.message
+    });
+  }
+});
+
+// Update spin status (for future use)
+app.put('/api/admin/spins/:id/status', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    // Validate status
+    const validStatuses = ['active', 'inactive', 'expired', 'used'];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid status. Must be: active, inactive, expired, or used'
+      });
+    }
+
+    console.log('🔄 [ADMIN] Updating spin', id, 'to status:', status);
+
+    const { data, error } = await supabase
+      .from('lucky_wheel_spins')
+      .update({ status })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('❌ [ADMIN] Update error:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Update failed',
+        error: error.message
+      });
+    }
+
+    console.log('✅ [ADMIN] Spin updated');
+
+    res.json({
+      success: true,
+      data
+    });
+  } catch (error) {
+    console.error('❌ [ADMIN] Error updating spin:', error.message);
+    res.status(500).json({
+      success: false,
+      message: 'Error updating spin',
+      error: error.message
+    });
+  }
+});
+
+// =============================================================================
 // SERVE FRONTEND (For Heroku all-in-one deployment)
 // =============================================================================
 
