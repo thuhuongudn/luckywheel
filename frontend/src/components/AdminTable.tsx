@@ -4,11 +4,13 @@ import '../styles/AdminTable.css';
 
 interface AdminTableProps {
   spins: SpinRecord[];
+  onDeleteDiscount?: (spinId: string, couponCode: string) => Promise<void>;
 }
 
-const AdminTable: React.FC<AdminTableProps> = ({ spins }) => {
+const AdminTable: React.FC<AdminTableProps> = ({ spins, onDeleteDiscount }) => {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -37,6 +39,26 @@ const AdminTable: React.FC<AdminTableProps> = ({ spins }) => {
     };
     const badge = badges[status as keyof typeof badges] || { label: status, class: '' };
     return <span className={`status-badge ${badge.class}`}>{badge.label}</span>;
+  };
+
+  const handleDelete = async (spinId: string, couponCode: string) => {
+    if (!onDeleteDiscount) return;
+
+    const confirmed = window.confirm(
+      `Bạn có chắc muốn xóa mã giảm giá "${couponCode}" khỏi Haravan?\n\nLưu ý: Hành động này không thể hoàn tác!`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      setDeletingId(spinId);
+      await onDeleteDiscount(spinId, couponCode);
+      alert(`Đã xóa mã giảm giá "${couponCode}" thành công!`);
+    } catch (error: any) {
+      alert(`Lỗi khi xóa: ${error.message}`);
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   const filteredSpins = useMemo(() => {
@@ -94,12 +116,13 @@ const AdminTable: React.FC<AdminTableProps> = ({ spins }) => {
               <th>Trạng thái</th>
               <th>Ngày tạo</th>
               <th>Ngày hết hạn</th>
+              <th>Thao tác</th>
             </tr>
           </thead>
           <tbody>
             {filteredSpins.length === 0 ? (
               <tr>
-                <td colSpan={8} className="no-data">Không có dữ liệu</td>
+                <td colSpan={9} className="no-data">Không có dữ liệu</td>
               </tr>
             ) : (
               filteredSpins.map((spin, index) => (
@@ -112,6 +135,20 @@ const AdminTable: React.FC<AdminTableProps> = ({ spins }) => {
                   <td>{getStatusBadge(spin.status)}</td>
                   <td>{formatDate(spin.created_at)}</td>
                   <td>{formatDate(spin.expires_at)}</td>
+                  <td className="action-cell">
+                    {spin.discount_id && onDeleteDiscount ? (
+                      <button
+                        onClick={() => handleDelete(spin.id, spin.coupon_code)}
+                        disabled={deletingId === spin.id}
+                        className="btn-delete"
+                        title="Xóa mã giảm giá khỏi Haravan"
+                      >
+                        {deletingId === spin.id ? '⏳' : '🗑️'}
+                      </button>
+                    ) : (
+                      <span className="no-action">—</span>
+                    )}
+                  </td>
                 </tr>
               ))
             )}

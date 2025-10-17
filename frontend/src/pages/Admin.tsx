@@ -41,11 +41,44 @@ const Admin: React.FC = () => {
       setSpins(spinsData);
       setStats(statsData);
       setDistributions(distData);
+
+      // Auto-refresh Haravan status for active spins on page load
+      autoRefreshHaravanStatus();
     } catch (err) {
       console.error('Error fetching admin data:', err);
       setError('Không thể tải dữ liệu. Vui lòng thử lại sau.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const autoRefreshHaravanStatus = async () => {
+    try {
+      console.log('🔄 Auto-refreshing Haravan status for active spins...');
+
+      const result = await adminApi.refreshHaravanStatus();
+
+      if (result.data?.updated > 0) {
+        console.log(`✅ Updated ${result.data.updated} active spins`);
+        // Refresh data silently to show updated status
+        const spinsData = await adminApi.getSpins();
+        setSpins(spinsData);
+      }
+    } catch (err) {
+      console.error('⚠️ Auto-refresh Haravan status failed:', err);
+      // Don't show error to user, this is a background operation
+    }
+  };
+
+  const handleDeleteDiscount = async (spinId: string, _couponCode: string) => {
+    try {
+      await adminApi.deleteHaravanDiscount(spinId);
+
+      // Refresh data to show updated state
+      const spinsData = await adminApi.getSpins();
+      setSpins(spinsData);
+    } catch (err: any) {
+      throw new Error(err.message || 'Không thể xóa mã giảm giá');
     }
   };
 
@@ -99,7 +132,7 @@ const Admin: React.FC = () => {
           <PrizeDistributionComponent distributions={distributions} />
         )}
 
-        <AdminTable spins={spins} />
+        <AdminTable spins={spins} onDeleteDiscount={handleDeleteDiscount} />
       </div>
     </div>
   );
