@@ -68,7 +68,7 @@ export const adminApi = {
         active: prizeSpins.filter(s => s.status === 'active').length,
         expired: prizeSpins.filter(s => s.status === 'expired').length,
         used: prizeSpins.filter(s => s.status === 'used').length,
-        inactive: prizeSpins.filter(s => s.status === 'inactive').length,
+        inactive: 0, // Removed 'inactive' status - always return 0
       };
     });
   },
