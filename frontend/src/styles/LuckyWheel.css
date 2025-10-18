@@ -433,6 +433,7 @@
 @media (max-width: 768px) {
   .lucky-wheel-container {
     padding: 16px;
+    padding-top: 60px;  /* Extra space for close button when in iframe */
   }
 
   .wheel-header {
@@ -535,6 +536,7 @@
 @media (max-width: 480px) {
   .lucky-wheel-container {
     padding: 12px;
+    padding-top: 55px;  /* Extra space for close button when in iframe */
   }
 
   .wheel-header {
