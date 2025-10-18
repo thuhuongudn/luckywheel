@@ -27,6 +27,14 @@ app.use(helmet({
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"], // Allow Google Fonts CSS
       imgSrc: ["'self'", "data:"],
       fontSrc: ["'self'", "https:", "data:", "https://fonts.gstatic.com"], // Allow Google Fonts files
+      frameAncestors: [
+        "'self'",
+        "https://*.myharavan.com",     // Allow all Haravan shops
+        "https://*.haravan.com",        // Allow Haravan domains
+        "https://*.shopify.com",        // Allow Shopify (if needed)
+        "http://localhost:*",           // Allow local testing
+        "http://127.0.0.1:*"            // Allow local testing
+      ]
     },
   },
 }));
