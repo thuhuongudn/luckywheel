@@ -24,9 +24,9 @@ app.use(helmet({
       defaultSrc: ["'self'"],
       connectSrc: ["'self'"], // Allow fetch to same origin (API calls)
       scriptSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'"], // Allow inline styles for React
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"], // Allow Google Fonts CSS
       imgSrc: ["'self'", "data:"],
-      fontSrc: ["'self'", "https:", "data:"],
+      fontSrc: ["'self'", "https:", "data:", "https://fonts.gstatic.com"], // Allow Google Fonts files
     },
   },
 }));
