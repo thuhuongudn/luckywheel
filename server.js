@@ -29,11 +29,26 @@ app.use(helmet({
       fontSrc: ["'self'", "https:", "data:", "https://fonts.gstatic.com"], // Allow Google Fonts files
       frameAncestors: [
         "'self'",
-        "https://*.myharavan.com",     // Allow all Haravan shops
-        "https://*.haravan.com",        // Allow Haravan domains
-        "https://*.shopify.com",        // Allow Shopify (if needed)
-        "http://localhost:*",           // Allow local testing
-        "http://127.0.0.1:*"            // Allow local testing
+        // Haravan Vietnam domains
+        "https://*.myharavan.com",      // Haravan shops (primary)
+        "https://*.haravan.com",         // Haravan platform
+        "https://*.haravan.vn",          // Haravan Vietnam (.vn TLD)
+        "http://*.myharavan.com",        // HTTP fallback (dev/staging)
+        "http://*.haravan.com",          // HTTP fallback
+        "http://*.haravan.vn",           // HTTP fallback (.vn)
+        // Custom domains (specific merchant shops)
+        "https://nhathuocvietnhat.vn",   // Nha Thuoc Viet Nhat custom domain
+        "http://nhathuocvietnhat.vn",    // HTTP fallback
+        "https://www.nhathuocvietnhat.vn", // With www subdomain
+        "http://www.nhathuocvietnhat.vn",  // HTTP + www
+        // Shopify (if needed)
+        "https://*.shopify.com",
+        "https://*.myshopify.com",
+        // Local development
+        "http://localhost:*",
+        "http://127.0.0.1:*",
+        "https://localhost:*",
+        "https://127.0.0.1:*"
       ]
     },
   },
