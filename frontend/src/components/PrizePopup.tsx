@@ -80,6 +80,15 @@ const PrizePopup: React.FC<PrizePopupProps> = ({ prize, code, name, phone, expir
               : 'Vui lòng kiểm tra tin nhắn Zalo để nhận mã giảm giá!'
             }
           </p>
+
+          <a
+            href="https://nhathuocvietnhat.vn/collections/nhom-hang-olympian-lab-careline"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="popup-product-button"
+          >
+            🛒 Đến danh sách sản phẩm
+          </a>
         </div>
       </div>
     </div>

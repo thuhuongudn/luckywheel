@@ -128,6 +128,32 @@
   font-size: 16px;
 }
 
+/* Product link - Underlined neubrutalism link */
+.product-link {
+  display: block;
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--nb-coral);
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+  margin-bottom: 32px;
+  transition: var(--nb-transition);
+  cursor: pointer;
+}
+
+.product-link:hover {
+  color: var(--nb-black);
+  transform: translate(-1px, -1px);
+  text-decoration-color: var(--nb-black);
+}
+
+.product-link:active {
+  transform: translate(1px, 1px);
+}
+
 /* Form Section - Clean neubrutalism card */
 .form-section {
   margin-bottom: 32px;

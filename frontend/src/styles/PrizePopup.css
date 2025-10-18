@@ -236,6 +236,39 @@
   line-height: 1.5;
 }
 
+/* Product button - Neubrutalism link button */
+.popup-product-button {
+  display: block;
+  width: 100%;
+  background: var(--nb-lime);
+  color: var(--nb-black);
+  border: var(--nb-border);
+  padding: 12px 20px;
+  border-radius: var(--nb-radius);
+  font-size: 15px;
+  font-family: var(--font-button);
+  font-weight: 800;
+  cursor: pointer;
+  margin-top: 14px;
+  transition: var(--nb-transition);
+  box-shadow: var(--nb-shadow);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  text-align: center;
+  text-decoration: none;
+}
+
+.popup-product-button:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--nb-shadow-lg);
+  background: var(--nb-blue);
+}
+
+.popup-product-button:active {
+  transform: translate(1px, 1px);
+  box-shadow: var(--nb-shadow-sm);
+}
+
 .popup-button {
   width: 100%;
   background: var(--nb-coral);
@@ -342,6 +375,12 @@
   .popup-note {
     font-size: 12px;
     margin-top: 12px;
+  }
+
+  .popup-product-button {
+    padding: 10px 18px;
+    font-size: 14px;
+    margin-top: 10px;
   }
 
   .popup-button {

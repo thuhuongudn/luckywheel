@@ -518,6 +518,15 @@ const LuckyWheel: React.FC = () => {
         <span className="product-badge">Careline</span>
       </div>
 
+      <a
+        href="https://nhathuocvietnhat.vn/collections/nhom-hang-olympian-lab-careline"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="product-link"
+      >
+        Xem danh sách sản phẩm áp dụng
+      </a>
+
       <div className="form-section">
         <div className="input-group">
           <input
