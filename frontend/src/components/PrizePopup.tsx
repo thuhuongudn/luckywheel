@@ -81,10 +81,6 @@ const PrizePopup: React.FC<PrizePopupProps> = ({ prize, code, name, phone, expir
             }
           </p>
         </div>
-
-        <button className="popup-button" onClick={onClose}>
-          Đóng
-        </button>
       </div>
     </div>
   );

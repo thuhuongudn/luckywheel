@@ -12,6 +12,8 @@
   align-items: center;
   z-index: 1000;
   animation: nbFadeIn 0.2s ease-in;
+  padding: 20px;
+  overflow-y: auto;
 }
 
 @keyframes nbFadeIn {
@@ -26,13 +28,16 @@
 .popup-content {
   background: white;
   border-radius: var(--nb-radius-lg);
-  padding: 40px 32px;
-  max-width: 480px;
+  padding: 52px 32px 32px;
+  max-width: 440px;
   width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
   position: relative;
   box-shadow: var(--nb-shadow-xl);
   border: var(--nb-border-thick);
   animation: nbPopIn 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  margin: auto;
 }
 
 @keyframes nbPopIn {
@@ -48,46 +53,49 @@
 
 .popup-close {
   position: absolute;
-  top: 16px;
-  right: 16px;
-  background: white;
-  border: var(--nb-border-thin);
-  border-radius: 50%;
-  font-size: 28px;
+  top: 12px;
+  left: 12px;
+  background: var(--nb-coral);
+  color: white;
+  border: var(--nb-border);
+  border-radius: var(--nb-radius-sm);
+  font-size: 20px;
   cursor: pointer;
-  color: var(--nb-black);
   line-height: 1;
-  padding: 0;
-  width: 36px;
-  height: 36px;
+  padding: 8px 12px;
+  width: auto;
+  min-width: 40px;
+  height: 40px;
   transition: var(--nb-transition);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: var(--nb-shadow-sm);
-  font-weight: 700;
+  box-shadow: var(--nb-shadow);
+  font-weight: 800;
+  font-family: var(--font-button);
+  z-index: 10;
 }
 
 .popup-close:hover {
-  transform: translate(-1px, -1px);
-  box-shadow: 4px 4px 0 0 var(--nb-black);
-  background: var(--nb-coral);
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 0 var(--nb-black);
+  background: var(--nb-black);
   color: white;
 }
 
 .popup-close:active {
   transform: translate(1px, 1px);
-  box-shadow: 2px 2px 0 0 var(--nb-black);
+  box-shadow: 3px 3px 0 0 var(--nb-black);
 }
 
 .popup-body {
   text-align: center;
-  padding: 20px 0 24px;
+  padding: 8px 0 16px;
 }
 
 .popup-icon {
-  font-size: 72px;
-  margin-bottom: 20px;
+  font-size: 56px;
+  margin-bottom: 12px;
   animation: nbBounce 0.6s ease-in-out;
 }
 
@@ -105,29 +113,29 @@
 
 .popup-title {
   font-family: var(--font-heading);
-  font-size: clamp(28px, 5vw, 36px);
+  font-size: clamp(24px, 5vw, 32px);
   font-weight: 700;
   color: var(--nb-black);
-  margin: 0 0 12px 0;
+  margin: 0 0 8px 0;
   text-transform: uppercase;
   letter-spacing: 0.02em;
 }
 
 .popup-message {
   font-family: var(--font-body);
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 600;
   color: rgba(17, 17, 17, 0.7);
-  margin: 0 0 20px 0;
+  margin: 0 0 16px 0;
 }
 
 .popup-prize {
   font-family: var(--font-number);
-  font-size: clamp(44px, 8vw, 64px);
+  font-size: clamp(40px, 8vw, 56px);
   font-weight: 700;
   color: var(--nb-coral);
-  margin: 24px 0;
-  padding: 16px 24px;
+  margin: 16px 0;
+  padding: 14px 20px;
   background: var(--nb-yellow);
   border: var(--nb-border);
   border-radius: var(--nb-radius);
@@ -136,24 +144,24 @@
 }
 
 .popup-expiry {
-  margin: 20px auto 0;
-  padding: 14px 20px;
+  margin: 14px auto 0;
+  padding: 12px 18px;
   border-radius: var(--nb-radius);
   background: var(--nb-coral);
   display: inline-flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   border: var(--nb-border-thin);
   box-shadow: var(--nb-shadow-sm);
   color: white;
-  font-size: 14px;
+  font-size: 13px;
   font-family: var(--font-body);
   font-weight: 600;
 }
 
 .popup-expiry strong {
-  font-size: 18px;
+  font-size: 17px;
   font-family: var(--font-number);
   font-weight: 700;
   color: white;
@@ -164,31 +172,31 @@
   border-radius: var(--nb-radius);
   border: var(--nb-border);
   box-shadow: var(--nb-shadow-sm);
-  padding: 24px;
-  margin: 24px 0;
+  padding: 20px;
+  margin: 16px 0;
 }
 
 .code-label {
-  font-size: 15px;
+  font-size: 14px;
   font-family: var(--font-body);
   font-weight: 600;
   color: var(--nb-black);
-  margin: 0 0 14px 0;
+  margin: 0 0 10px 0;
   text-transform: uppercase;
   letter-spacing: 0.02em;
 }
 
 .code-value {
-  font-size: 28px;
+  font-size: 26px;
   font-weight: 800;
   color: var(--nb-black);
   font-family: var(--font-number);
   background: white;
-  padding: 16px 24px;
+  padding: 14px 20px;
   border-radius: var(--nb-radius-sm);
   border: var(--nb-border);
-  margin-bottom: 14px;
-  letter-spacing: 4px;
+  margin-bottom: 12px;
+  letter-spacing: 3px;
   box-shadow: var(--nb-shadow-sm);
 }
 
@@ -220,12 +228,12 @@
 }
 
 .popup-note {
-  font-size: 14px;
+  font-size: 13px;
   font-family: var(--font-body);
   font-weight: 500;
   color: rgba(17, 17, 17, 0.7);
-  margin: 20px 0 0 0;
-  line-height: 1.6;
+  margin: 14px 0 0 0;
+  line-height: 1.5;
 }
 
 .popup-button {
@@ -233,13 +241,13 @@
   background: var(--nb-coral);
   color: white;
   border: var(--nb-border);
-  padding: 16px 32px;
+  padding: 14px 28px;
   border-radius: var(--nb-radius);
-  font-size: 18px;
+  font-size: 16px;
   font-family: var(--font-button);
   font-weight: 800;
   cursor: pointer;
-  margin-top: 24px;
+  margin-top: 16px;
   transition: var(--nb-transition);
   box-shadow: var(--nb-shadow);
   text-transform: uppercase;
@@ -257,31 +265,88 @@
 }
 
 @media (max-width: 480px) {
+  .popup-overlay {
+    padding: 12px;
+  }
+
   .popup-content {
-    padding: 32px 24px;
+    padding: 48px 20px 24px;
+    max-height: 92vh;
+  }
+
+  .popup-close {
+    top: 10px;
+    left: 10px;
+    padding: 6px 10px;
+    min-width: 36px;
+    height: 36px;
+    font-size: 18px;
+  }
+
+  .popup-body {
+    padding: 4px 0 12px;
   }
 
   .popup-icon {
-    font-size: 60px;
+    font-size: 48px;
+    margin-bottom: 10px;
   }
 
   .popup-title {
-    font-size: clamp(24px, 6vw, 32px);
+    font-size: clamp(22px, 6vw, 28px);
+    margin-bottom: 6px;
+  }
+
+  .popup-message {
+    font-size: 15px;
+    margin-bottom: 12px;
   }
 
   .popup-prize {
-    font-size: clamp(36px, 10vw, 52px);
-    padding: 12px 20px;
+    font-size: clamp(36px, 10vw, 48px);
+    padding: 12px 18px;
+    margin: 12px 0;
+  }
+
+  .popup-expiry {
+    margin: 12px auto 0;
+    padding: 10px 16px;
+    font-size: 12px;
+  }
+
+  .popup-expiry strong {
+    font-size: 16px;
+  }
+
+  .popup-code {
+    padding: 16px;
+    margin: 12px 0;
+  }
+
+  .code-label {
+    font-size: 13px;
+    margin-bottom: 8px;
   }
 
   .code-value {
-    font-size: 24px;
-    padding: 14px 20px;
-    letter-spacing: 3px;
+    font-size: 22px;
+    padding: 12px 16px;
+    letter-spacing: 2px;
+  }
+
+  .copy-button {
+    padding: 10px 20px;
+    font-size: 15px;
+  }
+
+  .popup-note {
+    font-size: 12px;
+    margin-top: 12px;
   }
 
   .popup-button {
-    padding: 14px 28px;
-    font-size: 16px;
+    padding: 12px 24px;
+    font-size: 15px;
+    margin-top: 12px;
   }
 }
