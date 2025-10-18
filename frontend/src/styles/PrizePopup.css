@@ -54,7 +54,7 @@
 .popup-close {
   position: absolute;
   top: 12px;
-  left: 12px;
+  right: 12px;
   background: var(--nb-coral);
   color: white;
   border: var(--nb-border);
@@ -276,7 +276,7 @@
 
   .popup-close {
     top: 10px;
-    left: 10px;
+    right: 10px;
     padding: 6px 10px;
     min-width: 36px;
     height: 36px;
