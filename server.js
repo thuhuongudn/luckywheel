@@ -843,15 +843,14 @@ app.delete('/api/admin/haravan/discount/:spinId', async (req, res) => {
       });
     }
 
-    if (!spin.discount_id) {
-      return res.status(400).json({
-        success: false,
-        message: 'No discount to delete'
-      });
+    // Delete from Haravan if discount exists
+    if (spin.discount_id) {
+      console.log(`🗑️  [HARAVAN] Deleting discount ${spin.discount_id} from Haravan...`);
+      await haravan.deleteDiscount(spin.discount_id);
+      console.log('✅ [HARAVAN] Discount deleted from Haravan');
+    } else {
+      console.log('⚠️  [HARAVAN] No discount_id, skipping Haravan deletion');
     }
-
-    // Delete from Haravan
-    await haravan.deleteDiscount(spin.discount_id);
 
     // Delete entire row from database (allow customer to spin again)
     const { error: deleteError } = await supabase
@@ -863,16 +862,20 @@ app.delete('/api/admin/haravan/discount/:spinId', async (req, res) => {
       console.error('❌ [HARAVAN] Database delete error:', deleteError);
       return res.status(500).json({
         success: false,
-        message: 'Discount deleted but failed to remove record from database',
+        message: 'Failed to remove record from database',
         error: deleteError.message
       });
     }
 
-    console.log('✅ [HARAVAN] Discount and record deleted (customer can spin again)');
+    console.log('✅ [HARAVAN] Record deleted from database (customer can spin again)');
+
+    const message = spin.discount_id
+      ? 'Đã xóa mã giảm giá khỏi Haravan và database. Khách hàng có thể quay lại.'
+      : 'Đã xóa record khỏi database. Khách hàng có thể quay lại.';
 
     res.json({
       success: true,
-      message: 'Discount deleted successfully. Customer can now spin again.'
+      message
     });
 
   } catch (error) {
